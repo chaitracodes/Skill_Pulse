@@ -1,78 +1,84 @@
 import React, { useState, useRef } from 'react';
-import { ALL_ROLES } from '../utils/jobRoleKeywords';
 
-const DOMAINS = [
-  'AI / Machine Learning', 'Web Development', 'DevOps & Cloud',
-  'Data Engineering', 'Systems Programming', 'Cybersecurity',
-  'Mobile Development', 'Blockchain & Web3', 'Product Management',
-  'UI/UX Design', 'Finance & Fintech', 'Game Development'
+const JOB_ROLES = [
+  'Frontend Developer', 'Backend Developer', 'Full Stack Developer',
+  'DevOps Engineer', 'Cloud Architect', 'Data Scientist',
+  'Data Engineer', 'Machine Learning Engineer', 'Systems Programmer',
+  'Cybersecurity Analyst', 'Product Manager', 'Mobile App Developer'
 ];
 
-const DOMAIN_SKILLS = {
-  'AI / Machine Learning': [
+const ROLE_SKILLS = {
+  'Frontend Developer': [
+    { name: 'JavaScript', trend: '→' }, { name: 'TypeScript', trend: '↑' }, { name: 'React', trend: '→' },
+    { name: 'Next.js', trend: '↑' }, { name: 'Tailwind CSS', trend: '↑' }, { name: 'Vue.js', trend: '→' },
+    { name: 'CSS', trend: '→' }, { name: 'Figma', trend: '↑' }, { name: 'GraphQL', trend: '→' }
+  ],
+  'Backend Developer': [
+    { name: 'Node.js', trend: '→' }, { name: 'Python', trend: '↑' }, { name: 'Go', trend: '↑' },
+    { name: 'Java', trend: '→' }, { name: 'PostgreSQL', trend: '→' }, { name: 'MongoDB', trend: '→' },
+    { name: 'Redis', trend: '↑' }, { name: 'Docker', trend: '↑' }, { name: 'REST APIs', trend: '→' }
+  ],
+  'Full Stack Developer': [
+    { name: 'TypeScript', trend: '↑' }, { name: 'React', trend: '→' }, { name: 'Node.js', trend: '→' },
+    { name: 'PostgreSQL', trend: '→' }, { name: 'Docker', trend: '↑' }, { name: 'AWS', trend: '→' },
+    { name: 'Next.js', trend: '↑' }, { name: 'Redis', trend: '↑' }, { name: 'Prisma', trend: '↑' }
+  ],
+  'DevOps Engineer': [
+    { name: 'Docker', trend: '→' }, { name: 'Kubernetes', trend: '↑' }, { name: 'Terraform', trend: '↑' },
+    { name: 'AWS', trend: '→' }, { name: 'GitHub Actions', trend: '↑' }, { name: 'Linux', trend: '→' },
+    { name: 'Ansible', trend: '→' }, { name: 'Prometheus', trend: '↑' }, { name: 'Bash', trend: '→' }
+  ],
+  'Cloud Architect': [
+    { name: 'AWS', trend: '→' }, { name: 'Azure', trend: '↑' }, { name: 'GCP', trend: '↑' },
+    { name: 'Terraform', trend: '↑' }, { name: 'Kubernetes', trend: '↑' }, { name: 'Serverless', trend: '↑' },
+    { name: 'Security', trend: '↑' }, { name: 'Networking', trend: '→' }
+  ],
+  'Data Scientist': [
+    { name: 'Python', trend: '↑' }, { name: 'SQL', trend: '→' }, { name: 'Pandas', trend: '→' },
+    { name: 'Scikit-learn', trend: '→' }, { name: 'PyTorch', trend: '↑' }, { name: 'TensorFlow', trend: '→' },
+    { name: 'Jupyter', trend: '→' }, { name: 'Statistics', trend: '→' }, { name: 'A/B Testing', trend: '↑' }
+  ],
+  'Data Engineer': [
+    { name: 'Python', trend: '↑' }, { name: 'SQL', trend: '→' }, { name: 'Apache Spark', trend: '→' },
+    { name: 'Airflow', trend: '→' }, { name: 'Kafka', trend: '↑' }, { name: 'Snowflake', trend: '↑' },
+    { name: 'dbt', trend: '↑' }, { name: 'Docker', trend: '↑' }, { name: 'BigQuery', trend: '↑' }
+  ],
+  'Machine Learning Engineer': [
     { name: 'Python', trend: '↑' }, { name: 'PyTorch', trend: '↑' }, { name: 'TensorFlow', trend: '→' },
-    { name: 'LangChain', trend: '↑' }, { name: 'HuggingFace', trend: '↑' }, { name: 'Scikit-learn', trend: '→' },
-    { name: 'MLflow', trend: '↑' }, { name: 'CUDA', trend: '↑' }, { name: 'RAG Systems', trend: '↑' },
-    { name: 'Vector Databases', trend: '↑' }, { name: 'Pandas', trend: '→' }, { name: 'NumPy', trend: '→' },
+    { name: 'CUDA', trend: '↑' }, { name: 'MLflow', trend: '↑' }, { name: 'LangChain', trend: '↑' },
+    { name: 'Vector DBs', trend: '↑' }, { name: 'Docker', trend: '↑' }, { name: 'HuggingFace', trend: '↑' }
   ],
-  'Web Development': [
-    { name: 'TypeScript', trend: '↑' }, { name: 'React', trend: '→' }, { name: 'Next.js', trend: '↑' },
-    { name: 'Tailwind CSS', trend: '↑' }, { name: 'Node.js', trend: '→' }, { name: 'GraphQL', trend: '→' },
-    { name: 'Vite', trend: '↑' }, { name: 'PostgreSQL', trend: '→' }, { name: 'Docker', trend: '↑' },
+  'Systems Programmer': [
+    { name: 'C', trend: '→' }, { name: 'C++', trend: '→' }, { name: 'Rust', trend: '↑' },
+    { name: 'Go', trend: '↑' }, { name: 'Linux Kernel', trend: '→' }, { name: 'Zig', trend: '↑' },
+    { name: 'WASM', trend: '↑' }
   ],
-  'DevOps & Cloud': [
-    { name: 'Kubernetes', trend: '↑' }, { name: 'Terraform', trend: '↑' }, { name: 'AWS', trend: '→' },
-    { name: 'GCP', trend: '↑' }, { name: 'Docker', trend: '→' }, { name: 'ArgoCD', trend: '↑' },
-    { name: 'GitHub Actions', trend: '↑' }, { name: 'Linux', trend: '→' }, { name: 'Prometheus', trend: '→' },
+  'Cybersecurity Analyst': [
+    { name: 'Linux', trend: '→' }, { name: 'Networking', trend: '→' }, { name: 'Python', trend: '↑' },
+    { name: 'Wireshark', trend: '→' }, { name: 'OSINT', trend: '↑' }, { name: 'Pen Testing', trend: '↑' },
+    { name: 'Cloud Security', trend: '↑' }
   ],
-  'Data Engineering': [
-    { name: 'Apache Spark', trend: '→' }, { name: 'dbt', trend: '↑' }, { name: 'Airflow', trend: '→' },
-    { name: 'Kafka', trend: '↑' }, { name: 'Snowflake', trend: '↑' }, { name: 'BigQuery', trend: '↑' },
-    { name: 'Python', trend: '↑' }, { name: 'duckdb', trend: '↑' }, { name: 'Databricks', trend: '↑' },
+  'Product Manager': [
+    { name: 'Agile/Scrum', trend: '→' }, { name: 'SQL', trend: '↑' }, { name: 'Figma', trend: '↑' },
+    { name: 'Jira', trend: '→' }, { name: 'A/B Testing', trend: '↑' }, { name: 'Roadmapping', trend: '→' },
+    { name: 'Data Analytics', trend: '↑' }
   ],
-  'Systems Programming': [
-    { name: 'Rust', trend: '↑' }, { name: 'C++', trend: '→' }, { name: 'Go', trend: '↑' },
-    { name: 'WASM', trend: '↑' }, { name: 'Linux Kernel', trend: '→' }, { name: 'Zig', trend: '↑' },
-  ],
-  'Cybersecurity': [
-    { name: 'Penetration Testing', trend: '↑' }, { name: 'OSINT', trend: '↑' },
-    { name: 'Burp Suite', trend: '→' }, { name: 'Python', trend: '↑' }, { name: 'Cloud Security', trend: '↑' },
-  ],
-  'Mobile Development': [
+  'Mobile App Developer': [
     { name: 'React Native', trend: '↑' }, { name: 'Flutter', trend: '↑' }, { name: 'Swift', trend: '→' },
     { name: 'Kotlin', trend: '→' }, { name: 'SwiftUI', trend: '↑' }, { name: 'Jetpack Compose', trend: '↑' },
-  ],
-  'Blockchain & Web3': [
-    { name: 'Solidity', trend: '↑' }, { name: 'Rust (Solana)', trend: '↑' }, { name: 'ethers.js', trend: '→' },
-    { name: 'wagmi', trend: '↑' }, { name: 'Zero Knowledge Proofs', trend: '↑' },
-  ],
-  'Product Management': [
-    { name: 'Roadmapping', trend: '→' }, { name: 'SQL', trend: '↑' }, { name: 'A/B Testing', trend: '↑' },
-    { name: 'Figma', trend: '↑' }, { name: 'Data Analytics', trend: '↑' },
-  ],
-  'UI/UX Design': [
-    { name: 'Figma', trend: '↑' }, { name: 'Prototyping', trend: '→' }, { name: 'Design Systems', trend: '↑' },
-    { name: 'Motion Design', trend: '↑' }, { name: 'Framer', trend: '↑' },
-  ],
-  'Finance & Fintech': [
-    { name: 'Python', trend: '↑' }, { name: 'Quantitative Modeling', trend: '↑' }, { name: 'SQL', trend: '→' },
-    { name: 'Algorithmic Trading', trend: '↑' }, { name: 'DeFi Protocols', trend: '↑' },
-  ],
-  'Game Development': [
-    { name: 'Unity', trend: '→' }, { name: 'Unreal Engine', trend: '↑' }, { name: 'C#', trend: '→' },
-    { name: 'Shader Programming', trend: '↑' }, { name: 'Godot', trend: '↑' },
+    { name: 'Firebase', trend: '→' }
   ],
 };
 
 export default function LandingView({ onNavigate, onProfileReady }) {
   const [step, setStep] = useState('home');     // home | upload | parsing | domain | skills
-  const [selectedDomain, setSelectedDomain] = useState('');
+  const [selectedRole, setSelectedRole] = useState('');
   const [selectedSkills, setSelectedSkills] = useState([]);
   const [customSkill, setCustomSkill] = useState('');
   const [parseStatus, setParseStatus] = useState('');
   const fileInputRef = useRef(null);
 
-  const skills = DOMAIN_SKILLS[selectedDomain] || [];
+  const skills = ROLE_SKILLS[selectedRole] || [];
 
   const toggleSkill = (name) =>
     setSelectedSkills(prev => prev.includes(name) ? prev.filter(s => s !== name) : [...prev, name]);
@@ -94,7 +100,7 @@ export default function LandingView({ onNavigate, onProfileReady }) {
       const formData = new FormData();
       formData.append('file', file);
       
-      setParseStatus('AI & MARKET ANALYSIS (MIGHT TAKE 10-15s)...');
+      setParseStatus('AI PARSING RESUME...');
 
       const res = await fetch('http://localhost:8000/api/analyze-resume', {
         method: 'POST',
@@ -106,15 +112,28 @@ export default function LandingView({ onNavigate, onProfileReady }) {
 
       const parsedRoles = data.resume_data.recommended_roles.map(r => r.role);
       const parsedSkills = data.resume_data.skills;
+      
+      setParseStatus('GENERATING LEARNING ROADMAP...');
+      
+      const targetRole = parsedRoles[0] || "Software Engineer";
+      
+      const roadRes = await fetch('http://localhost:8000/api/learning-roadmap', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ target_role: targetRole, known_skills: parsedSkills })
+      });
+      
+      const roadData = await roadRes.json();
 
       setParseStatus('DONE ✓');
       await new Promise(r => setTimeout(r, 400));
       
       if (onProfileReady) {
         onProfileReady({ 
-          predictedRoles: parsedRoles, 
-          skills: parsedSkills, 
-          fullAnalysis: data 
+          targetRoles: parsedRoles, 
+          knownSkills: parsedSkills, 
+          recommendedSkills: roadData.missing,
+          roadmapData: roadData
         });
       }
       onNavigate('TERMINAL');
@@ -128,9 +147,32 @@ export default function LandingView({ onNavigate, onProfileReady }) {
   };
 
   // ── Manual onboarding final step ────────────────────────────────────────────
-  const enterMarket = () => {
-    if (onProfileReady) onProfileReady({ predictedRoles: [], skills: selectedSkills });
-    onNavigate('TERMINAL');
+  const enterMarket = async () => {
+    setStep('parsing');
+    setParseStatus('AI GENERATING ROADMAP...');
+    try {
+      const res = await fetch('http://localhost:8000/api/learning-roadmap', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ target_role: selectedRole, known_skills: selectedSkills })
+      });
+      const data = await res.json();
+      
+      if (onProfileReady) {
+        onProfileReady({ 
+          targetRoles: [selectedRole], 
+          knownSkills: selectedSkills,
+          recommendedSkills: data.missing,
+          roadmapData: data
+        });
+      }
+      onNavigate('TERMINAL');
+    } catch (err) {
+      console.error(err);
+      setParseStatus(`ERROR: ${err.message}`);
+      await new Promise(r => setTimeout(r, 2000));
+      setStep('home');
+    }
   };
 
   // ════════════════════════════════════════════════════════════
@@ -202,11 +244,11 @@ export default function LandingView({ onNavigate, onProfileReady }) {
                 <div style={{ textAlign: 'center' }}>
                   <div style={{ fontFamily: "'Neue Haas Grotesk Display Pro', sans-serif", fontSize: '20px', marginBottom: '8px' }}>BUILD MANUALLY</div>
                   <div style={{ color: 'var(--text-muted)', fontSize: '11px', lineHeight: '1.6' }}>
-                    Select your domain and pick skills from a curated list. No résumé needed.
+                    Select your Target Job Role and pick skills you know.
                   </div>
                 </div>
                 <div style={{ backgroundColor: 'transparent', color: '#00D4FF', border: '1px solid #00D4FF', padding: '12px 28px', fontSize: '11px', fontWeight: '700', fontFamily: "'JetBrains Mono', monospace" }}>
-                  SELECT DOMAIN →
+                  SELECT JOB ROLE →
                 </div>
               </div>
 
@@ -227,19 +269,19 @@ export default function LandingView({ onNavigate, onProfileReady }) {
         </div>
         <div style={{ flex: 1, maxWidth: '660px', margin: '0 auto', padding: '56px 32px', width: '100%' }}>
           <div style={{ fontSize: '9px', color: 'var(--text-muted)', marginBottom: '10px', fontFamily: "'JetBrains Mono', monospace" }}>STEP 01 / 02</div>
-          <h2 style={{ fontFamily: "'Neue Haas Grotesk Display Pro', sans-serif", fontSize: '36px', margin: '0 0 8px' }}>SELECT YOUR DOMAIN</h2>
-          <p style={{ color: 'var(--text-muted)', fontSize: '12px', marginBottom: '32px' }}>Your primary career domain.</p>
+          <h2 style={{ fontFamily: "'Neue Haas Grotesk Display Pro', sans-serif", fontSize: '36px', margin: '0 0 8px' }}>TARGET JOB ROLE</h2>
+          <p style={{ color: 'var(--text-muted)', fontSize: '12px', marginBottom: '32px' }}>Your intended primary career role.</p>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-            {DOMAINS.map(d => (
-              <div key={d} onClick={() => setSelectedDomain(d)}
-                style={{ background: '#111', border: '1px solid #1F1F1F', borderLeft: selectedDomain === d ? '3px solid #00FF88' : '3px solid transparent', padding: '15px 18px', cursor: 'pointer', color: selectedDomain === d ? '#00FF88' : '#F0F0F0', fontSize: '13px', transition: 'all 0.15s', display: 'flex', justifyContent: 'space-between' }}>
+            {JOB_ROLES.map(d => (
+              <div key={d} onClick={() => setSelectedRole(d)}
+                style={{ background: '#111', border: '1px solid #1F1F1F', borderLeft: selectedRole === d ? '3px solid #00FF88' : '3px solid transparent', padding: '15px 18px', cursor: 'pointer', color: selectedRole === d ? '#00FF88' : '#F0F0F0', fontSize: '13px', transition: 'all 0.15s', display: 'flex', justifyContent: 'space-between' }}>
                 <span>{d}</span>
-                {selectedDomain === d && <span>›</span>}
+                {selectedRole === d && <span>›</span>}
               </div>
             ))}
           </div>
-          <button onClick={() => selectedDomain && setStep('skills')} disabled={!selectedDomain}
-            style={{ marginTop: '28px', width: '100%', padding: '18px', background: selectedDomain ? '#00FF88' : 'var(--bg-surface-elevated)', color: selectedDomain ? '#000' : 'var(--text-muted)', border: 'none', fontWeight: '700', fontSize: '13px', cursor: selectedDomain ? 'pointer' : 'not-allowed', fontFamily: "'JetBrains Mono', monospace" }}>
+          <button onClick={() => selectedRole && setStep('skills')} disabled={!selectedRole}
+            style={{ marginTop: '28px', width: '100%', padding: '18px', background: selectedRole ? '#00FF88' : 'var(--bg-surface-elevated)', color: selectedRole ? '#000' : 'var(--text-muted)', border: 'none', fontWeight: '700', fontSize: '13px', cursor: selectedRole ? 'pointer' : 'not-allowed', fontFamily: "'JetBrains Mono', monospace" }}>
             CONTINUE →
           </button>
         </div>
@@ -253,9 +295,9 @@ export default function LandingView({ onNavigate, onProfileReady }) {
       <div style={{ padding: '24px 64px', borderBottom: '1px solid var(--border-ghost)', display: 'flex', alignItems: 'center', gap: '12px' }}>
         <span style={{ color: '#00FF88', fontFamily: "'Neue Haas Grotesk Display Pro', sans-serif", fontSize: '18px' }}>SkillPulse</span>
         <span style={{ color: 'var(--border-ghost)' }}>/</span>
-        <button onClick={() => setStep('domain')} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', fontSize: '11px', cursor: 'pointer' }}>DOMAIN</button>
+        <button onClick={() => setStep('domain')} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', fontSize: '11px', cursor: 'pointer' }}>TARGET JOB</button>
         <span style={{ color: 'var(--border-ghost)' }}>/</span>
-        <span style={{ color: '#00FF88', fontSize: '11px' }}>{selectedDomain.toUpperCase()}</span>
+        <span style={{ color: '#00FF88', fontSize: '11px' }}>{selectedRole.toUpperCase()}</span>
       </div>
       <div style={{ flex: 1, maxWidth: '880px', margin: '0 auto', padding: '56px 32px', width: '100%' }}>
         <div style={{ fontSize: '9px', color: 'var(--text-muted)', marginBottom: '10px', fontFamily: "'JetBrains Mono', monospace" }}>STEP 02 / 02</div>

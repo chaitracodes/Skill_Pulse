@@ -288,6 +288,22 @@ def what_if_simulation(data: WhatIfRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+class LearningRoadmapRequest(BaseModel):
+    target_role: str
+    known_skills: list[str]
+
+@app.post("/api/learning-roadmap")
+def get_learning_roadmap(data: LearningRoadmapRequest):
+    """
+    Evaluates known skills against a target job role and generates a missing skills roadmap.
+    """
+    from ai_module import generate_learning_roadmap
+    try:
+        result = generate_learning_roadmap(data.target_role, data.known_skills)
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)

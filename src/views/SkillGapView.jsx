@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 
-export default function DeepDiveView({ assetId = 'PYTHON', watchlist = [], toggleWatchlist }) {
+export default function SkillGapView({ assetId = 'Python', watchlist = [], toggleWatchlist }) {
   const isWatched = watchlist.includes(assetId);
   const actionText = isWatched ? 'SELL' : 'BUY';
   const actionColor = isWatched ? 'var(--neon-red)' : 'var(--neon-green)';

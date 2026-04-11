@@ -183,3 +183,52 @@ def simulate_scenario(scenario: str, role: str) -> dict:
         print(f"Error simulating scenario: {e}")
         return {"impact_percent": 0, "reason": "AI computation failed"}
 
+def generate_learning_roadmap(target_role: str, known_skills: list) -> dict:
+    """
+    Compares known skills against the target role and generates missing skills and a weekly roadmap.
+    """
+    client = get_groq_client()
+    if not client:
+        return {"matched": [], "missing": [], "recommendation": "API key missing.", "roadmap": []}
+        
+    prompt = f"""
+    The user wants to become a '{target_role}'. They currently know: {', '.join(known_skills)}.
+    Identify what key skills they already MATCH, and highly specific structural/technical skills they are MISSING to be job-ready.
+    Then, create a 6-week learning roadmap heavily focused on integrating the MISSING skills.
+    
+    Respond EXACTLY with this JSON format:
+    {{
+      "matched": ["Skill1", "Skill2"],
+      "missing": ["MissingSkill1", "MissingSkill2", "MissingSkill3"],
+      "recommendation": "A 3-sentence concise technical recommendation on what to focus on.",
+      "roadmap": [
+         {{ "week": 1, "topic": "Name of Topic", "task": "What to do" }},
+         {{ "week": 2, "topic": "Name of Topic", "task": "What to do" }},
+         {{ "week": 3, "topic": "Name of Topic", "task": "What to do" }},
+         {{ "week": 4, "topic": "Name of Topic", "task": "What to do" }},
+         {{ "week": 5, "topic": "Name of Topic", "task": "What to do" }},
+         {{ "week": 6, "topic": "Name of Topic", "task": "What to do" }}
+      ]
+    }}
+    """
+    
+    try:
+        chat_completion = client.chat.completions.create(
+            messages=[
+                {"role": "system", "content": "You are a specialized AI that only outputs valid JSON objects."},
+                {"role": "user", "content": prompt}
+            ],
+            model="llama-3.1-8b-instant",
+        )
+        content = chat_completion.choices[0].message.content.strip()
+        if content.startswith("```json"):
+            content = content[7:-3].strip()
+        elif content.startswith("```"):
+            content = content[3:-3].strip()
+            
+        result = json.loads(content)
+        return result
+    except Exception as e:
+        print(f"Error generating roadmap: {e}")
+        return {"matched": [], "missing": [], "recommendation": "Failed to analyze roadmap.", "roadmap": []}
+

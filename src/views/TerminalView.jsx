@@ -7,7 +7,7 @@ import { fetchTrends } from '../utils/trendsApi';
 import { getTrendKeyword, ALL_ROLES } from '../utils/jobRoleKeywords';
 
 // ── Watchlist item component ─────────────────────────────────────────────────
-function WatchlistItem({ role, isActive, onClick }) {
+function WatchlistItem({ role, isActive, onClick, actionElement }) {
   return (
     <div
       onClick={() => onClick(role)}
@@ -20,10 +20,11 @@ function WatchlistItem({ role, isActive, onClick }) {
         transition: 'all 0.15s'
       }}
     >
-      <div style={{ fontSize: '12px', color: isActive ? '#00FF88' : '#fff', marginBottom: '2px' }}>{role}</div>
-      <div style={{ fontSize: '9px', color: 'var(--text-muted)', fontFamily: "'JetBrains Mono', monospace' " }}>
+      <div style={{ fontSize: '12px', color: isActive ? '#00FF88' : '#fff', marginBottom: '4px' }}>{role}</div>
+      <div style={{ fontSize: '9px', color: 'var(--text-muted)', fontFamily: "'JetBrains Mono', monospace", marginBottom: actionElement ? '8px' : '0' }}>
         {getTrendKeyword(role)}
       </div>
+      {actionElement}
     </div>
   );
 }
@@ -77,8 +78,9 @@ function RoleSearch({ onAdd, existing }) {
 // ════════════════════════════════════════════════════════════════════════════
 export default function TerminalView({
   onDeepDive,
-  watchlist1 = [], // AI predicted
-  watchlist2 = [], setWatchlist2,
+  onGetJobReady,
+  watchlist1 = [], // Target Jobs
+  watchlist2 = [], setWatchlist2, // Recommended Skills
   watchlist3 = [], setWatchlist3,
 }) {
   const [chartType, setChartType] = useState('CANDLE');
@@ -435,10 +437,10 @@ export default function TerminalView({
         {/* WL description */}
         <div style={{ padding: '10px 16px', fontSize: '9px', color: 'var(--text-muted)', fontFamily: "'JetBrains Mono', monospace", borderBottom: '1px solid var(--border-ghost)' }}>
           {activeWL === 1
-            ? 'AI-PREDICTED ROLES FROM YOUR RÉSUMÉ'
+            ? 'YOUR TARGET JOB ROLES (WL1)'
             : activeWL === 2
-            ? 'YOUR CUSTOM WATCHLIST 2'
-            : 'YOUR CUSTOM WATCHLIST 3'}
+            ? 'RECOMMENDED SKILLS TO LEARN (WL2)'
+            : 'YOUR CUSTOM WATCHLIST (WL3)'}
         </div>
 
         {/* Search bar for WL2/WL3 */}
@@ -458,7 +460,9 @@ export default function TerminalView({
             <div style={{ padding: '40px 20px', textAlign: 'center', fontSize: '11px', color: 'var(--text-muted)', fontFamily: "'JetBrains Mono', monospace", lineHeight: '1.8' }}>
               {activeWL === 1
                 ? 'Upload your résumé on the\nLanding page to auto-populate\nyour predicted job roles.'
-                : 'Search and add job roles\nabove to start tracking\ntheir market trends.'}
+                : activeWL === 2
+                ? 'Your recommended skills will\nappear here after onboarding.'
+                : 'Search and add custom entries\nabove to start tracking.'}
             </div>
           ) : (
             activeList.map(role => (
@@ -467,6 +471,16 @@ export default function TerminalView({
                 role={role}
                 isActive={activeRole === role}
                 onClick={(r) => handleRoleSwitch(r)}
+                actionElement={
+                  activeWL === 1 && (
+                    <button 
+                       onClick={(e) => { e.stopPropagation(); onGetJobReady && onGetJobReady(role); }}
+                       style={{ background: '#00D4FF', border: 'none', color: '#000', padding: '6px 12px', fontSize: '9px', fontWeight: 'bold', cursor: 'pointer', fontFamily: "'JetBrains Mono', monospace", width: '100%', marginTop: '4px' }}
+                    >
+                      GET JOB READY →
+                    </button>
+                  )
+                }
               />
             ))
           )}
