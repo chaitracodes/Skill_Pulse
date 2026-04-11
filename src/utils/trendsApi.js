@@ -18,38 +18,43 @@ function hashCode(str) {
 }
 
 function seededRand(seed) {
-  // LCG pseudo-random number generator
   let s = seed;
   return () => {
-    s = (s * 1664525 + 1013904223) & 0xffffffff;
+    s = (Math.imul(1664525, s) + 1013904223) | 0;
     return (s >>> 0) / 0xffffffff;
   };
 }
 
 // ── Unique mock OHLC per keyword ──────────────────────────────────────────────
 function mockOHLCForKeyword(keyword, count) {
-  const rand = seededRand(hashCode(keyword));
+  // Add more entropy to the seed based on keyword characteristics
+  const seed = hashCode(keyword) ^ (keyword.length << 16) ^ (keyword.charCodeAt(keyword.length - 1) << 8);
+  const rand = seededRand(seed);
   const data = [];
-  // Different starting price per keyword (40–85 range)
-  let price = 40 + (hashCode(keyword) % 45);
+
+  // Wider starting price range (30-120) and unique trend bias per keyword
+  let price = 30 + (seed % 90);
+  const bias = (rand() - 0.5) * 2; // Fixed bias for this specific series
   const now = new Date();
 
   for (let i = 0; i < count; i++) {
     const d = new Date(now);
     d.setDate(d.getDate() - (count - i));
 
-    const open  = price + (rand() - 0.5) * 6;
-    const close = open  + (rand() - 0.5) * 8;
-    const high  = Math.max(open, close) + rand() * 4;
-    const low   = Math.min(open, close) - rand() * 4;
-    const volume = Math.round(800 + rand() * 5000);
+    // Higher volatility (up to 12% moves) and price-action logic
+    const move = (rand() - 0.5 + bias * 0.1) * 12;
+    const open = price;
+    const close = price + move;
+    const high = Math.max(open, close) + rand() * 5;
+    const low = Math.min(open, close) - rand() * 5;
+    const volume = Math.round(500 + rand() * 8000);
 
     data.push({
       date: d.toLocaleDateString("en-US", { month: "short", day: "numeric" }),
-      open:   +open.toFixed(2),
-      close:  +close.toFixed(2),
-      high:   +high.toFixed(2),
-      low:    +low.toFixed(2),
+      open: +open.toFixed(2),
+      close: +close.toFixed(2),
+      high: +high.toFixed(2),
+      low: +low.toFixed(2),
       volume,
       interest: +close.toFixed(1),
     });

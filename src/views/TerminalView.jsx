@@ -101,9 +101,9 @@ export default function TerminalView({
   const loadData = useCallback(async () => {
     if (!activeRole) return;
     setIsLoading(true);
-    setChartOpacity(0.4);
     const keyword = getTrendKeyword(activeRole);
-    const { candles, source } = await fetchTrends(keyword, timeframe);
+    // Add timestamp to bypass potential browser caching
+    const { candles, source } = await fetchTrends(keyword, timeframe, Date.now());
     setRawData(candles);
     setDataSource(source);
     setIsLoading(false);
@@ -111,6 +111,20 @@ export default function TerminalView({
   }, [activeRole, timeframe]);
 
   useEffect(() => { loadData(); }, [loadData]);
+
+  const handleRoleSwitch = (role) => {
+    if (role === activeRole) return;
+    setChartOpacity(0);
+    setRawData([]); // Clear old data immediately so the chart is fresh
+    setActiveRole(role);
+  };
+
+  const handleTimeframeSwitch = (tf) => {
+    if (tf === timeframe) return;
+    setChartOpacity(0);
+    setRawData([]); // Clear old data immediately
+    setTimeframe(tf);
+  };
 
   // ── Derived chart arrays ─────────────────────────────────────────────────
   const lineData = rawData.map(d => ({ time: d.date, value: d.close }));
@@ -171,7 +185,7 @@ export default function TerminalView({
         {/* Timeframe */}
         <div style={{ display: 'flex', gap: '6px', marginBottom: '16px', alignItems: 'center' }}>
           {['1D', '1W', '1M', '3M', '1Y', 'ALL'].map(tf => (
-            <span key={tf} onClick={() => setTimeframe(tf)} style={{
+            <span key={tf} onClick={() => handleTimeframeSwitch(tf)} style={{
               fontSize: '10px', padding: '4px 10px', cursor: 'pointer',
               color: timeframe === tf ? '#00FF88' : 'var(--text-muted)',
               border: timeframe === tf ? '1px solid #00FF88' : '1px solid var(--border-ghost)',
@@ -320,7 +334,7 @@ export default function TerminalView({
                 key={role}
                 role={role}
                 isActive={activeRole === role}
-                onClick={(r) => setActiveRole(r)}
+                onClick={(r) => handleRoleSwitch(r)}
               />
             ))
           )}
