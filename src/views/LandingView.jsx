@@ -64,27 +64,6 @@ const DOMAIN_SKILLS = {
   ],
 };
 
-// ── PDF text extractor ────────────────────────────────────────────────────────
-async function extractPdfText(file) {
-  if (!window.pdfjsLib) {
-    const script = document.createElement('script');
-    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
-    document.head.appendChild(script);
-    await new Promise(r => setTimeout(r, 1500));
-    window.pdfjsLib.GlobalWorkerOptions.workerSrc =
-      'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-  }
-  const ab = await file.arrayBuffer();
-  const pdf = await window.pdfjsLib.getDocument({ data: ab }).promise;
-  let text = '';
-  for (let i = 1; i <= pdf.numPages; i++) {
-    const page = await pdf.getPage(i);
-    const content = await page.getTextContent();
-    text += content.items.map(s => s.str).join(' ') + '\n';
-  }
-  return text.trim();
-}
-
 export default function LandingView({ onNavigate, onProfileReady }) {
   const [step, setStep] = useState('home');     // home | upload | parsing | domain | skills
   const [selectedDomain, setSelectedDomain] = useState('');
@@ -104,72 +83,40 @@ export default function LandingView({ onNavigate, onProfileReady }) {
     setCustomSkill('');
   };
 
-  // ── Resume → Claude → job role predictions ─────────────────────────────────
+  // ── Resume → Backend AI Analytics ─────────────────────────────────────────
   const handleResumeUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
     setStep('parsing');
-    setParseStatus('EXTRACTING TEXT FROM RÉSUMÉ...');
+    setParseStatus('SENDING TO BACKEND...');
 
     try {
-      let rawText = '';
-      if (file.type === 'application/pdf') {
-        rawText = await extractPdfText(file);
-      } else {
-        rawText = await file.text();
-      }
+      const formData = new FormData();
+      formData.append('file', file);
+      
+      setParseStatus('AI & MARKET ANALYSIS (MIGHT TAKE 10-15s)...');
 
-      const apiKey = import.meta.env.VITE_CLAUDE_API_KEY;
-
-      if (!apiKey) {
-        // Demo fallback — no API key
-        await new Promise(r => setTimeout(r, 1800));
-        setParseStatus('DEMO MODE — NO API KEY FOUND');
-        await new Promise(r => setTimeout(r, 800));
-        const mockRoles = [
-          'Data Scientist', 'ML Engineer', 'Data Analyst',
-          'Analytics Engineer', 'AI Researcher', 'NLP Engineer', 'Data Engineer'
-        ];
-        if (onProfileReady) onProfileReady({ predictedRoles: mockRoles, skills: [] });
-        onNavigate('TERMINAL');
-        return;
-      }
-
-      setParseStatus('ANALYZING WITH CLAUDE AI...');
-
-      const res = await fetch('https://api.anthropic.com/v1/messages', {
+      const res = await fetch('http://localhost:8000/api/analyze-resume', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-api-key': apiKey,
-          'anthropic-version': '2023-06-01',
-          'anthropic-dangerously-allow-browser': 'true',
-        },
-        body: JSON.stringify({
-          model: 'claude-3-5-sonnet-20241022',
-          max_tokens: 600,
-          system: `You are a career expert AI. Given a résumé, extract skills and predict the best-matching job roles.
-Return ONLY a valid JSON object in this exact format, no prose:
-{
-  "skills": ["skill1", "skill2", ...],
-  "predictedRoles": ["Role1", "Role2", ..., "Role7"]
-}
-The predictedRoles array must contain between 7 and 9 roles chosen ONLY from this list:
-${ALL_ROLES.join(', ')}.
-Choose roles that genuinely match the candidate's skills, projects, and experience.`,
-          messages: [{ role: 'user', content: `Analyze this résumé:\n\n${rawText.slice(0, 8000)}` }],
-        }),
+        body: formData,
       });
 
-      if (!res.ok) throw new Error(`Claude API error ${res.status}`);
+      if (!res.ok) throw new Error(`Backend API error ${res.status}`);
       const data = await res.json();
-      const jsonMatch = data.content[0].text.match(/\{[\s\S]*\}/);
-      if (!jsonMatch) throw new Error('No JSON in response');
-      const parsed = JSON.parse(jsonMatch[0]);
+
+      const parsedRoles = data.resume_data.recommended_roles.map(r => r.role);
+      const parsedSkills = data.resume_data.skills;
 
       setParseStatus('DONE ✓');
       await new Promise(r => setTimeout(r, 400));
-      if (onProfileReady) onProfileReady(parsed);
+      
+      if (onProfileReady) {
+        onProfileReady({ 
+          predictedRoles: parsedRoles, 
+          skills: parsedSkills, 
+          fullAnalysis: data 
+        });
+      }
       onNavigate('TERMINAL');
 
     } catch (err) {

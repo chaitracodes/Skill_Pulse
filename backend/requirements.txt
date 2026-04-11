@@ -1,0 +1,9 @@
+fastapi
+uvicorn
+python-multipart
+PyMuPDF
+groq
+pytrends
+pandas
+numpy
+python-dotenv

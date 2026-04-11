@@ -87,6 +87,10 @@ export default function TerminalView({
   const [activeRole, setActiveRole] = useState(null);
   const [activeWL, setActiveWL] = useState(1); // 1 | 2 | 3
   const [rawData, setRawData] = useState([]);
+  const [simulationPrompt, setSimulationPrompt] = useState('');
+  const [simulationLoading, setSimulationLoading] = useState(false);
+  const [simulationResult, setSimulationResult] = useState(null);
+  const [predictiveData, setPredictiveData] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [dataSource, setDataSource] = useState('mock');
 
@@ -116,6 +120,8 @@ export default function TerminalView({
     if (role === activeRole) return;
     setChartOpacity(0);
     setRawData([]); // Clear old data immediately so the chart is fresh
+    setPredictiveData([]);
+    setSimulationResult(null);
     setActiveRole(role);
   };
 
@@ -123,17 +129,28 @@ export default function TerminalView({
     if (tf === timeframe) return;
     setChartOpacity(0);
     setRawData([]); // Clear old data immediately
+    setPredictiveData([]);
+    setSimulationResult(null);
     setTimeframe(tf);
   };
 
   // ── Derived chart arrays ─────────────────────────────────────────────────
-  const lineData = rawData.map(d => ({ time: d.date, value: d.close }));
-  const candleData = rawData.map(d => {
+  const combinedData = [...rawData, ...predictiveData];
+  const lineData = combinedData.map(d => ({ 
+    time: d.date, 
+    value: d.isPrediction ? null : d.close, 
+    predictedValue: d.isPrediction ? d.close : null 
+  }));
+  if (rawData.length > 0 && predictiveData.length > 0) {
+    lineData[rawData.length - 1].predictedValue = lineData[rawData.length - 1].value;
+  }
+  const candleData = combinedData.map(d => {
     const bullish = d.close >= d.open;
     return {
       ...d, bullish,
       bodyLow: Math.min(d.open, d.close),
       bodyHeight: parseFloat(Math.abs(d.close - d.open).toFixed(2)),
+      isPrediction: d.isPrediction
     };
   });
   const ohlc = rawData.length > 0 ? rawData[rawData.length - 1] : { open: 0, high: 0, low: 0, close: 0 };
@@ -224,7 +241,9 @@ export default function TerminalView({
                 <Tooltip contentStyle={{ background: '#0a0a0a', border: '1px solid #1F1F1F', fontFamily: "'JetBrains Mono', monospace", fontSize: '10px' }} labelStyle={{ color: '#00FF88' }} />
                 <Bar dataKey="bodyLow" stackId="c" fill="transparent" isAnimationActive={true} animationDuration={600} />
                 <Bar dataKey="bodyHeight" stackId="c" isAnimationActive={true} animationDuration={600}>
-                  {candleData.map((e, i) => <Cell key={i} fill={e.bullish ? '#00FF88' : '#FF4444'} />)}
+                  {candleData.map((e, i) => (
+                    <Cell key={i} fill={e.isPrediction ? (e.bullish ? '#B026FF' : '#6A1B9A') : (e.bullish ? '#00FF88' : '#FF4444')} />
+                  ))}
                 </Bar>
               </ComposedChart>
             </ResponsiveContainer>
@@ -236,12 +255,17 @@ export default function TerminalView({
                     <stop offset="5%" stopColor="#00FF88" stopOpacity={0.3} />
                     <stop offset="95%" stopColor="#00FF88" stopOpacity={0} />
                   </linearGradient>
+                  <linearGradient id="predGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#B026FF" stopOpacity={0.4} />
+                    <stop offset="95%" stopColor="#B026FF" stopOpacity={0} />
+                  </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="1 6" stroke="#1A1A1A" />
                 <XAxis dataKey="time" tick={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 10, fill: '#3A3A3A' }} axisLine={false} tickLine={false} interval="preserveStartEnd" />
                 <YAxis orientation="right" domain={['auto', 'auto']} tick={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 10, fill: '#3A3A3A' }} axisLine={false} tickLine={false} />
                 <Tooltip contentStyle={{ background: '#0a0a0a', border: '1px solid #00FF88', fontFamily: "'JetBrains Mono', monospace", fontSize: '10px' }} itemStyle={{ color: '#00FF88' }} />
-                <Area type="monotone" dataKey="value" stroke="#00FF88" fill="url(#lineGrad)" isAnimationActive={true} animationDuration={600} />
+                <Area type="monotone" dataKey="value" stroke="#00FF88" fill="url(#lineGrad)" isAnimationActive={true} animationDuration={600} connectNulls />
+                <Area type="monotone" dataKey="predictedValue" stroke="#B026FF" strokeDasharray="4 4" fill="url(#predGrad)" isAnimationActive={true} animationDuration={600} connectNulls />
               </AreaChart>
             </ResponsiveContainer>
           )}
@@ -256,30 +280,138 @@ export default function TerminalView({
                 <XAxis dataKey="date" hide />
                 <YAxis hide />
                 <Bar dataKey="volume" isAnimationActive={true} animationDuration={600}>
-                  {candleData.map((e, i) => <Cell key={i} fill={e.bullish ? '#00FF8866' : '#FF444466'} />)}
+                  {candleData.map((e, i) => (
+                    <Cell key={i} fill={e.isPrediction ? (e.bullish ? '#B026FF66' : '#6A1B9A66') : (e.bullish ? '#00FF8866' : '#FF444466')} />
+                  ))}
                 </Bar>
               </BarChart>
             </ResponsiveContainer>
           </div>
         )}
 
-        {/* Sector mini cards */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '14px', marginTop: '24px' }}>
-          {['AI/ML', 'DEVOPS', 'DATA_ENG', 'WEB_DEV'].map((s, i) => {
-            const vals = ['+4.8%', '+1.2%', '+3.1%', '-0.4%'];
-            const pos = vals[i].startsWith('+');
-            return (
-              <div key={s} style={{ border: '1px solid var(--border-ghost)', padding: '14px', background: 'var(--bg-surface)' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px', fontSize: '10px' }}>
-                  <span style={{ color: 'var(--text-muted)' }}>{s}</span>
-                  <span style={{ color: pos ? '#00FF88' : '#FF4444' }}>{vals[i]}</span>
+        {/* WHAT-IF ENGINE SIMULATION */}
+        <div style={{ marginTop: '24px', border: '1px solid var(--border-ghost)', background: 'rgba(176, 38, 255, 0.05)', padding: '24px' }}>
+          <div style={{ fontSize: '12px', color: '#B026FF', fontFamily: "'JetBrains Mono', monospace", marginBottom: '16px', fontWeight: 'bold' }}>
+            WHAT-IF SIMULATION ENGINE ⟡ 24-MONTH PREDICTIVE ORACLE
+          </div>
+          <div style={{ display: 'flex', gap: '12px' }}>
+            <input
+              type="text"
+              value={simulationPrompt}
+              onChange={e => setSimulationPrompt(e.target.value)}
+              placeholder='e.g., "What if a global pandemic hits tomorrow?"'
+              style={{
+                flex: 1, background: '#111', border: '1px solid #1F1F1F', borderRadius: '2px',
+                color: '#F0F0F0', padding: '12px 16px', fontSize: '12px',
+                outline: 'none', fontFamily: "'JetBrains Mono', monospace"
+              }}
+              onKeyDown={e => {
+                if (e.key === 'Enter') {
+                  const submitSimulation = async () => {
+                    if (!simulationPrompt || !activeRole || rawData.length === 0) return;
+                    setSimulationLoading(true); setSimulationResult(null); setPredictiveData([]);
+                    try {
+                      const res = await fetch('http://localhost:8000/api/what-if', {
+                        method: 'POST', headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ scenario: simulationPrompt, role: activeRole })
+                      });
+                      const data = await res.json();
+                      setSimulationResult(data);
+                      
+                      const lastPoint = rawData[rawData.length - 1];
+                      let currentVal = lastPoint.close;
+                      const targetVal = currentVal * (1 + (data.impact_percent / 100));
+                      const points = [];
+                      const lastDate = new Date(lastPoint.date);
+                      
+                      for (let i = 1; i <= 24; i++) {
+                        const stepDate = new Date(lastDate);
+                        stepDate.setMonth(stepDate.getMonth() + i);
+                        const progress = i / 24;
+                        const ease = progress < 0.5 ? 2 * progress * progress : -1 + (4 - 2 * progress) * progress;
+                        const smoothTarget = currentVal + (targetVal - currentVal) * ease;
+                        const noise = (Math.random() - 0.5) * (currentVal * 0.15); // 15% volatility
+                        
+                        const predictedClose = Math.max(0, smoothTarget + noise);
+                        const predictedOpen = points.length > 0 ? points[points.length-1].close : currentVal;
+                        points.push({
+                           date: stepDate.toISOString().split('T')[0],
+                           open: parseFloat(predictedOpen.toFixed(2)),
+                           close: parseFloat(predictedClose.toFixed(2)),
+                           high: parseFloat((Math.max(predictedOpen, predictedClose) * 1.05).toFixed(2)),
+                           low: parseFloat((Math.min(predictedOpen, predictedClose) * 0.95).toFixed(2)),
+                           volume: lastPoint.volume * (1 + (Math.random() - 0.5)),
+                           isPrediction: true
+                        });
+                      }
+                      setPredictiveData(points);
+                    } catch (e) {
+                      console.error(e);
+                    } finally {
+                      setSimulationLoading(false);
+                    }
+                  };
+                  submitSimulation();
+                }
+              }}
+            />
+            <button
+               // The exact same onClick logic bound above to button
+              disabled={simulationLoading}
+              onClick={async () => {
+                if (!simulationPrompt || !activeRole || rawData.length === 0) return;
+                setSimulationLoading(true); setSimulationResult(null); setPredictiveData([]);
+                try {
+                  const res = await fetch('http://localhost:8000/api/what-if', {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ scenario: simulationPrompt, role: activeRole })
+                  });
+                  const data = await res.json();
+                  setSimulationResult(data);
+                  const lastPoint = rawData[rawData.length - 1];
+                  let currentVal = lastPoint.close;
+                  const targetVal = currentVal * (1 + (data.impact_percent / 100));
+                  const points = [];
+                  const lastDate = new Date(lastPoint.date);
+                  for (let i = 1; i <= 24; i++) {
+                    const stepDate = new Date(lastDate);
+                    stepDate.setMonth(stepDate.getMonth() + i);
+                    const progress = i / 24;
+                    const ease = progress < 0.5 ? 2 * progress * progress : -1 + (4 - 2 * progress) * progress;
+                    const smoothTarget = currentVal + (targetVal - currentVal) * ease;
+                    const noise = (Math.random() - 0.5) * (currentVal * 0.15);
+                    const predictedClose = Math.max(0, smoothTarget + noise);
+                    const predictedOpen = points.length > 0 ? points[points.length-1].close : currentVal;
+                    points.push({
+                       date: stepDate.toISOString().split('T')[0],
+                       open: parseFloat(predictedOpen.toFixed(2)), close: parseFloat(predictedClose.toFixed(2)),
+                       high: parseFloat((Math.max(predictedOpen, predictedClose) * 1.05).toFixed(2)), low: parseFloat((Math.min(predictedOpen, predictedClose) * 0.95).toFixed(2)),
+                       volume: lastPoint.volume * (1 + (Math.random() - 0.5)), isPrediction: true
+                    });
+                  }
+                  setPredictiveData(points);
+                } catch (e) { console.error(e); } finally { setSimulationLoading(false); }
+              }}
+              style={{
+                background: simulationLoading ? '#333' : '#B026FF', border: 'none', borderRadius: '2px',
+                color: '#FFF', padding: '0 24px', fontSize: '11px', fontWeight: 'bold', cursor: simulationLoading ? 'not-allowed' : 'pointer',
+                fontFamily: "'Space Mono', monospace"
+              }}
+            >
+              {simulationLoading ? 'COMPUTING...' : 'EXECUTE'}
+            </button>
+          </div>
+          
+          {simulationResult && (
+            <div style={{ marginTop: '16px', borderTop: '1px solid rgba(176,38,255,0.2)', paddingTop: '16px', display: 'flex', gap: '24px', alignItems: 'center' }}>
+                <div style={{ fontSize: '32px', fontWeight: 'bold', color: simulationResult.impact_percent >= 0 ? '#00FF88' : '#FF4444', fontFamily: "'Space Mono', monospace" }}>
+                    {simulationResult.impact_percent > 0 ? '+' : ''}{simulationResult.impact_percent}%
                 </div>
-                <svg width="100%" height="28" viewBox="0 0 120 28" preserveAspectRatio="none">
-                  <path d={pos ? "M0,24 L30,18 L60,10 L90,6 L120,2" : "M0,4 L30,8 L60,14 L90,20 L120,25"} fill="none" stroke={pos ? '#00FF88' : '#FF4444'} strokeWidth="1.5" />
-                </svg>
-              </div>
-            );
-          })}
+                <div style={{ flex: 1, fontSize: '11px', color: '#F0F0F0', lineHeight: 1.6, fontFamily: "'JetBrains Mono', monospace", borderLeft: '1px solid rgba(176,38,255,0.2)', paddingLeft: '16px' }}>
+                    <span style={{ color: '#B026FF', fontWeight: 'bold' }}>AI ORACLE REASON:</span> {simulationResult.reason}
+                </div>
+            </div>
+          )}
         </div>
       </div>
 
