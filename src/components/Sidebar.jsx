@@ -1,13 +1,13 @@
 import React from 'react';
-import { Home, LayoutGrid, Newspaper, Activity, Settings, Database } from 'lucide-react';
+import { LayoutGrid, Database, BookOpen, Newspaper, User, Settings } from 'lucide-react';
 
-export default function Sidebar({ activedTab = 'DASHBOARD', onNavigate }) {
+export default function Sidebar({ activeTab = 'TERMINAL', onNavigate }) {
   const navItems = [
-    { id: 'DASHBOARD', icon: LayoutGrid, label: 'DASHBOARD' },
-    { id: 'STAKING', icon: Database, label: 'STAKING' },
-    { id: 'LEARNING_HUB', icon: Home, label: 'LEARNING_HUB' }, 
-    { id: 'MARKETS', icon: Newspaper, label: 'MARKET NEWS' },
-    { id: 'ANALYTICS', icon: Activity, label: 'ANALYTICS' },
+    { id: 'TERMINAL',     icon: LayoutGrid, label: 'TERMINAL' },
+    { id: 'MARKETS',      icon: Newspaper,  label: 'MARKETS' },
+    { id: 'STAKING',      icon: Database,   label: 'STAKING' },
+    { id: 'LEARNING_HUB', icon: BookOpen,   label: 'LEARN' },
+    { id: 'PROFILE',      icon: User,       label: 'PROFILE' },
   ];
 
   return (
@@ -25,8 +25,8 @@ export default function Sidebar({ activedTab = 'DASHBOARD', onNavigate }) {
       top: 0,
       zIndex: 100
     }}>
-      {/* Top Logo / Home */}
-      <div 
+      {/* Logo */}
+      <div
         style={{ marginBottom: '48px', cursor: 'pointer' }}
         onClick={() => onNavigate('LANDING')}
       >
@@ -35,36 +35,40 @@ export default function Sidebar({ activedTab = 'DASHBOARD', onNavigate }) {
         </div>
       </div>
 
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '32px', width: '100%' }}>
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '28px', width: '100%' }}>
         {navItems.map(item => {
-          const isActive = activedTab === item.id;
+          const isActive = activeTab === item.id;
           return (
-            <div 
+            <div
               key={item.id}
               onClick={() => onNavigate(item.id)}
               style={{
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',
-                gap: '8px',
+                gap: '6px',
                 cursor: 'pointer',
                 position: 'relative',
-                width: '100%'
+                width: '100%',
+                padding: '4px 0'
               }}
             >
               {isActive && (
-                <div style={{ position: 'absolute', left: 0, top: '-8px', bottom: '-8px', width: '2px', backgroundColor: 'var(--neon-green)' }} />
+                <div style={{
+                  position: 'absolute', left: 0, top: '-4px', bottom: '-4px',
+                  width: '2px', backgroundColor: 'var(--neon-green)'
+                }} />
               )}
-              <div style={{ 
-                padding: isActive ? '8px' : '0', 
+              <div style={{
+                padding: isActive ? '8px' : '0',
                 backgroundColor: isActive ? 'rgba(0, 255, 136, 0.1)' : 'transparent',
                 borderRadius: '4px',
                 border: isActive ? '1px solid var(--neon-green)' : 'none'
               }}>
                 <item.icon size={20} color={isActive ? 'var(--neon-green)' : 'var(--text-muted)'} />
               </div>
-              <span style={{ 
-                fontSize: '8px', 
+              <span style={{
+                fontSize: '7px',
                 color: isActive ? 'var(--neon-green)' : 'var(--text-muted)',
                 letterSpacing: '0.05em',
                 textAlign: 'center',
@@ -77,9 +81,7 @@ export default function Sidebar({ activedTab = 'DASHBOARD', onNavigate }) {
         })}
       </div>
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', paddingBottom: '24px' }}>
-        <Settings size={20} color={'var(--text-muted)'} style={{ cursor: 'pointer'}} />
-      </div>
+      <Settings size={18} color="var(--text-muted)" style={{ cursor: 'pointer', paddingBottom: '8px' }} />
     </div>
   );
 }

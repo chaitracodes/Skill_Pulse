@@ -3,11 +3,11 @@ import Sidebar from './components/Sidebar';
 import TopNav from './components/TopNav';
 import LandingView from './views/LandingView';
 import TerminalView from './views/TerminalView';
-import PortfolioView from './views/PortfolioView'; // This is technically the Learning Hub design
+import PortfolioView from './views/PortfolioView'; // Learning Hub
 import NewsView from './views/NewsView';
-import RoadmapView from './views/RoadmapView';
 import StakingView from './views/StakingView';
 import DeepDiveView from './views/DeepDiveView';
+import ProfileView from './views/ProfileView';
 
 function App() {
   const [currentRoute, setCurrentRoute] = useState('LANDING');
@@ -24,8 +24,8 @@ function App() {
   };
 
   const toggleWatchlist = (assetId) => {
-    setWatchlist(prev => 
-      prev.includes(assetId) 
+    setWatchlist(prev =>
+      prev.includes(assetId)
         ? prev.filter(a => a !== assetId)
         : [...prev, assetId]
     );
@@ -33,15 +33,18 @@ function App() {
 
   const renderView = () => {
     switch (currentRoute) {
-      case 'LIQUIDITY':
-        return <StakingView />;
       case 'LANDING':
-        return <LandingView onNavigate={handleNavigate} onResumeParsed={(data) => {
-          setWatchlist(prev => {
-             const newSkills = data.filter(skill => !prev.includes(skill));
-             return [...prev, ...newSkills];
-          });
-        }} />;
+        return (
+          <LandingView
+            onNavigate={handleNavigate}
+            onResumeParsed={(skills) => {
+              setWatchlist(prev => {
+                const newSkills = skills.filter(s => !prev.includes(s));
+                return [...prev, ...newSkills];
+              });
+            }}
+          />
+        );
       case 'DASHBOARD':
       case 'TERMINAL':
         return <TerminalView onDeepDive={handleDeepDive} watchlist={watchlist} />;
@@ -50,20 +53,23 @@ function App() {
       case 'MARKETS':
         return <NewsView />;
       case 'STAKING':
+      case 'LIQUIDITY':
         return <StakingView />;
-      case 'ROADMAP': // Access via links or alternate flows
-        return <RoadmapView />;
       case 'DEEP_DIVE':
         return <DeepDiveView assetId={activeDeepDive} watchlist={watchlist} toggleWatchlist={toggleWatchlist} />;
+      case 'PROFILE':
+        return <ProfileView watchlist={watchlist} />;
       default:
-        return <LandingView onNavigate={handleNavigate} />;
+        return <LandingView onNavigate={handleNavigate} onResumeParsed={() => {}} />;
     }
   };
 
   return (
     <>
-      <Sidebar activedTab={currentRoute} onNavigate={handleNavigate} />
-      {currentRoute !== 'LANDING' && <TopNav activeRoute={currentRoute} onNavigate={handleNavigate} />}
+      <Sidebar activeTab={currentRoute} onNavigate={handleNavigate} />
+      {currentRoute !== 'LANDING' && (
+        <TopNav activeRoute={currentRoute} onNavigate={handleNavigate} />
+      )}
       {renderView()}
     </>
   );
