@@ -362,11 +362,21 @@ export default function TerminalView({ onDeepDive, watchlist = [] }) {
                 <div style={{ fontSize: '9px', color: 'var(--text-muted)' }}>{it.desc}</div>
               </div>
               <div style={{ width: '40px', height: '20px', flexShrink: 0 }}>
-                <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={lineData.slice(-6)}>
-                    <Area type="monotone" dataKey="value" stroke={it.color} fill="none" strokeWidth={1.5} isAnimationActive={true} animationDuration={600} dot={false} />
-                  </AreaChart>
-                </ResponsiveContainer>
+                <svg width="40" height="20" viewBox="0 0 40 20" preserveAspectRatio="none">
+                  {(() => {
+                    const pts = lineData.slice(-6);
+                    if (pts.length < 2) return null;
+                    const vals = pts.map(p => p.value);
+                    const mn = Math.min(...vals), mx = Math.max(...vals);
+                    const range = mx - mn || 1;
+                    const d = pts.map((p, i) => {
+                      const x = (i / (pts.length - 1)) * 40;
+                      const y = 20 - ((p.value - mn) / range) * 18;
+                      return `${i === 0 ? 'M' : 'L'}${x.toFixed(1)},${y.toFixed(1)}`;
+                    }).join(' ');
+                    return <path d={d} fill="none" stroke={it.color} strokeWidth="1.5" />;
+                  })()}
+                </svg>
               </div>
               <div style={{ textAlign: 'right', width: '44px', flexShrink: 0 }}>
                 <div style={{ fontSize: '12px' }}>{it.val}</div>
