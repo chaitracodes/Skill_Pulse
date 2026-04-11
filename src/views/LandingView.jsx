@@ -141,7 +141,8 @@ export default function LandingView({ onNavigate, onProfileReady }) {
     } catch (err) {
       console.error(err);
       setParseStatus(`ERROR: ${err.message}`);
-      await new Promise(r => setTimeout(r, 2000));
+      // Show error for longer (4s) so user can read it
+      await new Promise(r => setTimeout(r, 4000));
       setStep('home');
     }
   };
@@ -274,7 +275,7 @@ export default function LandingView({ onNavigate, onProfileReady }) {
           <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
             {JOB_ROLES.map(d => (
               <div key={d} onClick={() => setSelectedRole(d)}
-                style={{ background: '#111', border: '1px solid #1F1F1F', borderLeft: selectedRole === d ? '3px solid #00FF88' : '3px solid transparent', padding: '15px 18px', cursor: 'pointer', color: selectedRole === d ? '#00FF88' : '#F0F0F0', fontSize: '13px', transition: 'all 0.15s', display: 'flex', justifyContent: 'space-between' }}>
+                style={{ background: 'var(--bg-surface-elevated)', border: '1px solid var(--border-ghost)', borderLeft: selectedRole === d ? '3px solid #00FF88' : '3px solid transparent', padding: '15px 18px', cursor: 'pointer', color: selectedRole === d ? '#00FF88' : 'var(--text-main)', fontSize: '13px', transition: 'all 0.15s', display: 'flex', justifyContent: 'space-between' }}>
                 <span>{d}</span>
                 {selectedRole === d && <span>›</span>}
               </div>
@@ -319,7 +320,7 @@ export default function LandingView({ onNavigate, onProfileReady }) {
         </div>
         <div style={{ display: 'flex', gap: '10px', marginBottom: '36px' }}>
           <input type="text" value={customSkill} onChange={e => setCustomSkill(e.target.value)} onKeyDown={e => e.key === 'Enter' && addCustomSkill()}
-            placeholder="Add a custom skill..." style={{ flex: 1, background: '#111', border: '1px solid #1F1F1F', color: '#F0F0F0', padding: '12px 14px', fontSize: '12px', outline: 'none', fontFamily: "'JetBrains Mono', monospace" }} />
+            placeholder="Add a custom skill..." style={{ flex: 1, background: 'var(--bg-surface-elevated)', border: '1px solid var(--border-ghost)', color: 'var(--text-main)', padding: '12px 14px', fontSize: '12px', outline: 'none', fontFamily: "'JetBrains Mono', monospace" }} />
           <button onClick={addCustomSkill} style={{ background: 'var(--bg-surface-elevated)', border: '1px solid var(--border-ghost)', color: 'var(--text-muted)', padding: '12px 20px', fontSize: '11px', cursor: 'pointer' }}>+ ADD</button>
         </div>
         <button onClick={enterMarket} disabled={selectedSkills.length === 0}

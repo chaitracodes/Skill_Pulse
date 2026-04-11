@@ -14,6 +14,22 @@ def extract_text_from_pdf(pdf_bytes: bytes) -> str:
         print(f"Error reading PDF: {e}")
     return text
 
+def extract_text_from_txt(txt_bytes: bytes) -> str:
+    """
+    Extracts text from a plain text byte stream.
+    """
+    try:
+        return txt_bytes.decode('utf-8')
+    except UnicodeDecodeError:
+        try:
+            return txt_bytes.decode('latin-1')
+        except Exception as e:
+            print(f"Error reading TXT: {e}")
+            return ""
+    except Exception as e:
+        print(f"Error reading TXT: {e}")
+        return ""
+
 def extract_projects(text: str) -> str:
     """
     Extract text under "Projects" section

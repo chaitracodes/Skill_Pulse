@@ -47,7 +47,7 @@ function RoleSearch({ onAdd, existing }) {
         placeholder="Search job roles..."
         style={{
           width: '100%', boxSizing: 'border-box',
-          background: '#111', border: '1px solid #1F1F1F', borderRadius: '2px',
+          background: 'var(--bg-surface-elevated)', border: '1px solid var(--border-ghost)', borderRadius: '2px',
           color: '#F0F0F0', padding: '9px 12px', fontSize: '11px',
           outline: 'none', fontFamily: "'JetBrains Mono', monospace"
         }}
@@ -303,7 +303,7 @@ export default function TerminalView({
               onChange={e => setSimulationPrompt(e.target.value)}
               placeholder='e.g., "What if a global pandemic hits tomorrow?"'
               style={{
-                flex: 1, background: '#111', border: '1px solid #1F1F1F', borderRadius: '2px',
+                flex: 1, background: 'var(--bg-surface-elevated)', border: '1px solid var(--border-ghost)', borderRadius: '2px',
                 color: '#F0F0F0', padding: '12px 16px', fontSize: '12px',
                 outline: 'none', fontFamily: "'JetBrains Mono', monospace"
               }}
@@ -439,7 +439,7 @@ export default function TerminalView({
           {activeWL === 1
             ? 'YOUR TARGET JOB ROLES (WL1)'
             : activeWL === 2
-            ? 'RECOMMENDED SKILLS TO LEARN (WL2)'
+            ? 'YOUR SEARCHED JOB ROLES (WL2)'
             : 'YOUR CUSTOM WATCHLIST (WL3)'}
         </div>
 
@@ -461,7 +461,7 @@ export default function TerminalView({
               {activeWL === 1
                 ? 'Upload your résumé on the\nLanding page to auto-populate\nyour predicted job roles.'
                 : activeWL === 2
-                ? 'Your recommended skills will\nappear here after onboarding.'
+                ? 'Search and track custom job\nroles using the input above.'
                 : 'Search and add custom entries\nabove to start tracking.'}
             </div>
           ) : (
@@ -472,7 +472,7 @@ export default function TerminalView({
                 isActive={activeRole === role}
                 onClick={(r) => handleRoleSwitch(r)}
                 actionElement={
-                  activeWL === 1 && (
+                  (activeWL === 1 || activeWL === 2) && (
                     <button 
                        onClick={(e) => { e.stopPropagation(); onGetJobReady && onGetJobReady(role); }}
                        style={{ background: '#00D4FF', border: 'none', color: '#000', padding: '6px 12px', fontSize: '9px', fontWeight: 'bold', cursor: 'pointer', fontFamily: "'JetBrains Mono', monospace", width: '100%', marginTop: '4px' }}

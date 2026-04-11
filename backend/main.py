@@ -8,7 +8,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 from pydantic import BaseModel
 
-from resume_module import extract_text_from_pdf, extract_projects
+from resume_module import extract_text_from_pdf, extract_text_from_txt, extract_projects
 from ai_module import extract_skills_from_resume, recommend_roles, map_job_to_skills, simulate_scenario
 from trend_module import fetch_skill_trends, process_trends_matrix, to_ohlc, TIMEFRAME_MAP
 from market_module import generate_signals
@@ -56,55 +56,71 @@ def health():
 @app.post("/api/analyze-resume")
 async def analyze_resume(file: UploadFile = File(...)):
     """
-    Parses resume, extracts skills, recommends roles via Groq, 
+    Parses resume (PDF or TXT), extracts skills, recommends roles via Groq, 
     and returns a stock-market-like skill demand analysis.
     """
-    if not file.filename.endswith(".pdf"):
-        raise HTTPException(status_code=400, detail="Only PDF files are supported")
+    filename = file.filename.lower()
+    if not (filename.endswith(".pdf") or filename.endswith(".txt")):
+        raise HTTPException(status_code=400, detail="Only PDF and TXT files are supported")
         
-    pdf_bytes = await file.read()
-    
-    # 1. Resume Parsing Pipeline
-    text = extract_text_from_pdf(pdf_bytes)
-    projects_text = extract_projects(text)
-    
-    # Extract Skills via AI
-    skills = extract_skills_from_resume(text)
-    
-    # Recommend Roles
-    recommended_roles = recommend_roles(skills, projects_text)
-    
-    # Default to the top recommended role for market analysis, or fallback to generic
-    target_role = recommended_roles[0]["role"] if recommended_roles else "Software Engineer"
+    try:
+        content_bytes = await file.read()
         
-    # 2. Map Job to Core Skills (max 3)
-    job_skills_data = map_job_to_skills(target_role)
-    target_skills = job_skills_data.get("skills", ["Python", "SQL", "Machine Learning"])[:3]
-    
-    # 3. Google Trends Integration
-    df_trends = fetch_skill_trends(target_skills)
-    trend_info = process_trends_matrix(df_trends, target_skills)
-    
-    # 4. Stock Market Simulation Logic
-    signals = generate_signals(trend_info)
-    
-    # 5. Final Output Structure
-    return {
-        "resume_data": {
-            "skills": skills,
-            "projects": projects_text,
-            "recommended_roles": recommended_roles
-        },
-        "market_analysis": {
-            "job": target_role,
-            "skills": target_skills,
-            "trend_matrix": {
-                "shape": trend_info.get("shape", []),
-                "matrix": trend_info.get("matrix", [])
+        # 1. Resume Parsing Pipeline based on type
+        if filename.endswith(".pdf"):
+            text = extract_text_from_pdf(content_bytes)
+        else:
+            text = extract_text_from_txt(content_bytes)
+
+        if not text.strip():
+            raise HTTPException(status_code=422, detail="Failed to extract text from file")
+
+        projects_text = extract_projects(text)
+        
+        # Extract Skills via AI
+        skills = extract_skills_from_resume(text)
+        if not skills:
+            skills = []
+        
+        # Recommend Roles
+        recommended_roles = recommend_roles(skills, projects_text)
+        
+        # Default to the top recommended role for market analysis, or fallback to generic
+        target_role = recommended_roles[0]["role"] if recommended_roles else "Software Engineer"
+            
+        # 2. Map Job to Core Skills (max 3)
+        job_skills_data = map_job_to_skills(target_role)
+        target_skills = job_skills_data.get("skills", ["Python", "SQL", "Machine Learning"])[:3]
+        
+        # 3. Google Trends Integration
+        df_trends = fetch_skill_trends(target_skills)
+        trend_info = process_trends_matrix(df_trends, target_skills)
+        
+        # 4. Stock Market Simulation Logic
+        signals = generate_signals(trend_info)
+        
+        # 5. Final Output Structure
+        return {
+            "resume_data": {
+                "skills": skills,
+                "projects": projects_text,
+                "recommended_roles": recommended_roles
             },
-            "signals": signals
+            "market_analysis": {
+                "job": target_role,
+                "skills": target_skills,
+                "trend_matrix": {
+                    "shape": trend_info.get("shape", []),
+                    "matrix": trend_info.get("matrix", [])
+                },
+                "signals": signals
+            }
         }
-    }
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"Server Error in analyze_resume: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Internal Server Error: {str(e)}")
 
 
 @app.get("/api/trends")

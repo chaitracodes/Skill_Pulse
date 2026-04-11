@@ -4,6 +4,7 @@ import TopNav from './components/TopNav';
 import LandingView from './views/LandingView';
 import TerminalView from './views/TerminalView';
 import PortfolioView from './views/PortfolioView';
+import LearningHubView from './views/LearningHubView';
 import NewsView from './views/NewsView';
 import StakingView from './views/StakingView';
 import SkillGapView from './views/SkillGapView';
@@ -16,12 +17,13 @@ function App() {
   // Watchlists & User State
   const [knownSkills, setKnownSkills] = useState([]);
   const [watchlist1, setWatchlist1] = useState([]); // Target Jobs (e.g. Frontend Developer)
-  const [watchlist2, setWatchlist2] = useState([]); // Recommended Skills to learn (e.g. Next.js, TypeScript)
+  const [watchlist2, setWatchlist2] = useState([]); // Job Search Watchlist
   const [watchlist3, setWatchlist3] = useState([]); // User-curated custom skills
   
   // Learning Hub State
   const [activeLearningJob, setActiveLearningJob] = useState("");
   const [learningRoadmap, setLearningRoadmap] = useState(null);
+  const [completedCheckpoints, setCompletedCheckpoints] = useState([]); // Global array of checked off skills
 
   const handleNavigate = (route) => setCurrentRoute(route);
 
@@ -33,9 +35,7 @@ function App() {
   
   const handleGetJobReady = (jobRole) => {
     setActiveLearningJob(jobRole);
-    // In a real flow, if they have multiple Target Jobs causing watchlist1 to have multiple elements, 
-    // clicking one might fetch a new roadmap. Since we fetch one on onboarding, we can just navigate.
-    setCurrentRoute('PROFILE'); // ProfileView is the Learning Hub Dashboard
+    setCurrentRoute('LEARNING_HUB');
   };
 
   // Called by LandingView after résumé parse or manual onboarding
@@ -73,7 +73,15 @@ function App() {
           />
         );
       case 'LEARNING_HUB':
-        return <PortfolioView />;
+        return (
+          <LearningHubView 
+            jobRole={activeLearningJob} 
+            knownSkills={knownSkills} 
+            roadmap={learningRoadmap} 
+            completedCheckpoints={completedCheckpoints}
+            setCompletedCheckpoints={setCompletedCheckpoints}
+          />
+        );
       case 'MARKETS':
         return <NewsView />;
       case 'STAKING':
@@ -91,12 +99,13 @@ function App() {
             }
           />
         );
-      case 'PROFILE': // Serving as the Learning Hub
-        return <ProfileView 
-                  jobRole={activeLearningJob} 
-                  knownSkills={knownSkills} 
-                  roadmap={learningRoadmap} 
-               />;
+      case 'PROFILE': 
+        return (
+          <ProfileView 
+            knownSkills={knownSkills} 
+            completedCheckpoints={completedCheckpoints}
+          />
+        );
       default:
         return <LandingView onNavigate={handleNavigate} onProfileReady={handleProfileReady} />;
     }
