@@ -1,7 +1,7 @@
 import time
 import random
-from pytrends.request import TrendReq
 import pandas as pd
+import json
 
 TIMEFRAME_MAP = {
     "1D":  "now 1-d",
@@ -12,34 +12,80 @@ TIMEFRAME_MAP = {
     "ALL": "all",
 }
 
-def get_pytrends():
-    return TrendReq(hl="en-US", tz=330, timeout=(10, 25), retries=2, backoff_factor=0.5)
-
 def fetch_skill_trends(skills: list, timeframe="today 5-y", geo="IN"):
     """
-    Fetches interest-over-time for up to 5 skills.
-    Returns a pandas DataFrame.
+    Synthesizes interest-over-time for up to 5 skills using Groq/Llama-3.1.
+    Returns a pandas DataFrame matching the classic PyTrends structure.
     """
     if not skills:
         return pd.DataFrame()
         
-    # Pytrends supports max 5 keywords
     skills_to_query = skills[:5]
+    from ai_module import get_groq_client
+    
+    client = get_groq_client()
+    if not client:
+        print("Error: Groq client missing")
+        return pd.DataFrame()
+        
+    prompt = f"""
+    You are an economic empirical data engine. Generate realistic historical market demand tracking data representing the last 60 days for these technical skills: {skills_to_query}.
+    You must output exactly 60 data points (integers between 0 and 100) for EACH skill. Reflect modern trajectory (e.g., if a skill is growing, the array should slope upwards).
+    
+    Respond EXACTLY in this JSON format mapping each skill name exactly as typed to its 60-element integer array:
+    {{
+      "{skills_to_query[0]}": [55, 56, 54, 55, 56, 57, ...]
+    }}
+    Do not output any markdown formatting, headers, or extra text. ONLY raw JSON.
+    """
     
     try:
-        pytrends = get_pytrends()
-        pytrends.build_payload(kw_list=skills_to_query, timeframe=timeframe, geo=geo)
-        df = pytrends.interest_over_time()
+        chat_completion = client.chat.completions.create(
+            messages=[
+                {"role": "system", "content": "You are a pure JSON data-generation machine."},
+                {"role": "user", "content": prompt}
+            ],
+            model="llama-3.1-8b-instant",
+        )
+        content = chat_completion.choices[0].message.content.strip()
+        if content.startswith("```json"):
+            content = content[7:-3].strip()
+        elif content.startswith("```"):
+            content = content[3:-3].strip()
+            
+        data = json.loads(content)
         
-        if df.empty:
+        # Build pandas DataFrame with dynamic dates ending today
+        if not data or not isinstance(data, dict):
             return pd.DataFrame()
             
-        if "isPartial" in df.columns:
-            df = df.drop(columns=["isPartial"])
+        dates = pd.date_range(end=pd.Timestamp.today(), periods=60)
+        df_dict = {}
+        
+        for sk in skills_to_query:
+            arr = data.get(sk)
             
+            # Fallback if AI hallucinates casing
+            if arr is None:
+                for k in data.keys():
+                    if k.lower() == sk.lower():
+                        arr = data[k]
+                        break
+            
+            if arr is None or not isinstance(arr, list):
+                arr = [0]*60
+                
+            if len(arr) < 60:
+                arr += [arr[-1] if len(arr) > 0 else 0] * (60 - len(arr))
+            elif len(arr) > 60:
+                arr = arr[:60]
+            df_dict[sk] = arr
+            
+        df = pd.DataFrame(df_dict, index=dates)
         return df
+        
     except Exception as e:
-        print(f"Error fetching trends: {e}")
+        print(f"Error fetching synthetic trends via Groq: {e}")
         return pd.DataFrame()
 
 def process_trends_matrix(df: pd.DataFrame, skills: list) -> dict:
