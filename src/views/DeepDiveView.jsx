@@ -1,6 +1,11 @@
 import React from 'react';
 
-export default function DeepDiveView() {
+export default function DeepDiveView({ assetId = 'PYTHON', watchlist = [], toggleWatchlist }) {
+  const isWatched = watchlist.includes(assetId);
+  const actionText = isWatched ? 'SELL' : 'BUY';
+  const actionColor = isWatched ? 'var(--neon-red)' : 'var(--neon-green)';
+  const actionIcon = isWatched ? '✕' : '✓';
+
   return (
     <div style={{ marginLeft: '80px', padding: '64px', minHeight: 'calc(100vh - 60px)', display: 'flex', gap: '32px' }}>
       
@@ -11,7 +16,7 @@ export default function DeepDiveView() {
           <div>
             <div style={{ color: 'var(--text-muted)', fontSize: '9px', marginBottom: '16px' }}>ASSET_CLASS: PROGRAMMING_LANGUAGE / CORE_LAYER</div>
             <div style={{ display: 'flex', alignItems: 'baseline', gap: '24px' }}>
-              <h1 style={{ fontFamily: "'Neue Haas Grotesk Display Pro', sans-serif", fontSize: '80px', margin: 0, lineHeight: 1 }}>PYTHON.src</h1>
+              <h1 style={{ fontFamily: "'Neue Haas Grotesk Display Pro', sans-serif", fontSize: '80px', margin: 0, lineHeight: 1 }}>{assetId}.src</h1>
               <div>
                 <div style={{ fontSize: '9px', color: 'var(--text-muted)', marginBottom: '8px' }}>CURRENT_INDEX</div>
                 <div style={{ fontSize: '32px', color: 'var(--neon-green)', fontWeight: 'bold' }}>70.245 <span style={{ fontSize: '14px' }}>pts</span></div>
@@ -23,8 +28,21 @@ export default function DeepDiveView() {
               <div style={{ fontSize: '9px', color: 'var(--text-muted)', marginBottom: '8px' }}>30D_VOLATILITY</div>
               <div style={{ fontSize: '24px', color: 'var(--neon-red)' }}>12.4%</div>
             </div>
-            <button style={{ backgroundColor: 'var(--neon-green)', color: '#000', border: 'none', padding: '16px 32px', fontSize: '12px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <span>✓</span> TRACK_ASSET
+            <button 
+              onClick={() => toggleWatchlist && toggleWatchlist(assetId)}
+              style={{ 
+                backgroundColor: actionColor, 
+                color: '#000', 
+                border: 'none', 
+                padding: '16px 32px', 
+                fontSize: '12px', 
+                fontWeight: 'bold', 
+                cursor: 'pointer', 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: '8px' 
+              }}>
+              <span>{actionIcon}</span> {actionText}
             </button>
           </div>
         </div>

@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
+import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
 
-export default function TerminalView({ onDeepDive }) {
-  const [chartMode, setChartMode] = useState('CANDLESTICK'); // CANDLESTICK | AREA | HEIKIN_ASHI
+export default function TerminalView({ onDeepDive, watchlist = [] }) {
+  const [chartMode, setChartMode] = useState('AREA'); // CANDLESTICK | AREA | HEIKIN_ASHI
   const [timeframe, setTimeframe] = useState('1W'); // 1D | 1W | 1M
 
   const ohlcData = {
@@ -11,6 +12,24 @@ export default function TerminalView({ onDeepDive }) {
   };
 
   const ohlc = ohlcData[timeframe];
+
+  // Dynamic animated datasets based on timeframe
+  const datasets = {
+    '1D': [
+      { time: '00:00', value: 2840 }, { time: '04:00', value: 2810 }, { time: '08:00', value: 2835 },
+      { time: '12:00', value: 2820 }, { time: '16:00', value: 2852 }, { time: '20:00', value: 2842 }
+    ],
+    '1W': [
+      { time: 'Mon', value: 2740 }, { time: 'Tue', value: 2710 }, { time: 'Wed', value: 2800 },
+      { time: 'Thu', value: 2892 }, { time: 'Fri', value: 2880 }, { time: 'Sat', value: 2842 }
+    ],
+    '1M': [
+      { time: 'W1', value: 2500 }, { time: 'W2', value: 2700 }, { time: 'W3', value: 2400 },
+      { time: 'W4', value: 2900 }, { time: 'W5', value: 2842 }, { time: 'W6', value: 2842 }
+    ]
+  };
+
+  const chartData = datasets[timeframe];
 
   return (
     <div style={{ display: 'flex', height: 'calc(100vh - 60px)', marginLeft: '80px', overflow: 'hidden' }}>
@@ -44,7 +63,7 @@ export default function TerminalView({ onDeepDive }) {
           </div>
         </div>
 
-        {/* Chart Layout Mock */}
+        {/* Chart Layout */}
         <div style={{ flex: 1, position: 'relative', borderBottom: '1px solid var(--border-ghost)', marginBottom: '32px' }}>
           
           <div style={{ position: 'absolute', right: '16px', top: '16px', display: 'flex', gap: '8px', zIndex: 10 }}>
@@ -64,56 +83,41 @@ export default function TerminalView({ onDeepDive }) {
               </span>
             ))}
           </div>
-          <div style={{ position: 'absolute', left: '16px', top: '16px', color: 'var(--neon-green)', fontSize: '9px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <div style={{ position: 'absolute', left: '16px', top: '16px', color: 'var(--neon-green)', fontSize: '9px', display: 'flex', alignItems: 'center', gap: '8px', zIndex: 10 }}>
             <div style={{ width: '6px', height: '6px', backgroundColor: 'var(--neon-green)' }} />
             DEMAND_CANDLESTICK_HISTORY_V4
           </div>
 
-          <svg width="100%" height="300" viewBox="0 0 800 300" preserveAspectRatio="none">
-            {/* Grid lines */}
-            {[50, 100, 150, 200, 250].map(y => (
-              <line key={y} x1="0" y1={y} x2="800" y2={y} stroke="var(--border-ghost)" strokeDasharray="2,2" />
-            ))}
-            
-            {chartMode === 'CANDLESTICK' || chartMode === 'HEIKIN_ASHI' ? (
-              <g>
-                {/* Mock Candles customized by TF to look a bit different */}
-                <line x1="50" y1="180" x2="50" y2="240" stroke="var(--neon-green)" strokeWidth="1" />
-                <rect x="45" y="200" width="10" height="30" fill="var(--neon-green)" />
-                
-                <line x1="100" y1="160" x2="100" y2="220" stroke="var(--neon-red)" strokeWidth="1" />
-                <rect x="95" y="170" width="10" height="40" fill="var(--neon-red)" />
-
-                <line x1="150" y1="120" x2="150" y2="200" stroke="var(--neon-green)" strokeWidth="1" />
-                <rect x="145" y="140" width="10" height="50" fill="var(--neon-green)" />
-
-                <line x1="200" y1="90" x2="200" y2="150" stroke="var(--neon-green)" strokeWidth="1" />
-                <rect x="195" y="100" width="10" height="30" fill="var(--neon-green)" />
-
-                <line x1="250" y1={timeframe === '1W' ? 110 : 130} x2="250" y2={timeframe === '1W' ? 180 : 200} stroke="var(--neon-red)" strokeWidth="1" />
-                <rect x="245" y={timeframe === '1W' ? 120 : 140} width="10" height="50" fill="var(--neon-red)" />
-                
-                <line x1="300" y1="100" x2="300" y2="150" stroke="var(--neon-green)" strokeWidth="1" />
-                <rect x="295" y="110" width="10" height="20" fill="var(--neon-green)" />
-                
-                <line x1="350" y1="80" x2="350" y2="160" stroke="var(--neon-red)" strokeWidth="1" />
-                <rect x="345" y="90" width="10" height="60" fill="var(--neon-red)" />
-
-                <line x1="400" y1={timeframe === '1M' ? 40 : 60} x2="400" y2="140" stroke="var(--neon-green)" strokeWidth="1" />
-                <rect x="395" y={timeframe === '1M' ? 60 : 80} width="10" height="40" fill="var(--neon-green)" />
-
-                <line x1="450" y1="50" x2="450" y2="100" stroke="var(--neon-green)" strokeWidth="1" />
-                <rect x="445" y="55" width="10" height={timeframe === '1M' ? 60 : 30} fill="var(--neon-green)" />
-              </g>
-            ) : (
-              <g>
-                <path d="M 0,250 L 50,220 L 100,230 L 150,180 L 200,120 L 250,160 L 300,130 L 350,140 L 400,90 L 450,70 L 450,300 L 0,300 Z" fill="rgba(0, 255, 136, 0.1)" />
-                <path d="M 0,250 L 50,220 L 100,230 L 150,180 L 200,120 L 250,160 L 300,130 L 350,140 L 400,90 L 450,70" fill="none" stroke="var(--neon-green)" strokeWidth="2" />
-                <rect x="445" y="50" width="10" height="40" fill="none" stroke="var(--neon-green)" strokeDasharray="2,2" />
-              </g>
-            )}
-          </svg>
-          <div style={{ display: 'flex', gap: '32px', marginTop: '16px', fontSize: '10px', color: 'var(--text-muted)' }}>
+          <div style={{ width: '100%', height: '100%', position: 'absolute', inset: 0 }}>
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={chartData} margin={{ top: 50, right: 0, left: 0, bottom: 0 }}>
+                <defs>
+                  <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="var(--neon-green)" stopOpacity={0.3}/>
+                    <stop offset="95%" stopColor="var(--neon-green)" stopOpacity={0}/>
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border-ghost)" />
+                <XAxis dataKey="time" hide />
+                <YAxis domain={['dataMin - 100', 'dataMax + 100']} hide />
+                <Tooltip 
+                  contentStyle={{ backgroundColor: 'var(--bg-surface)', border: '1px solid var(--neon-green)', fontSize: '10px' }}
+                  itemStyle={{ color: 'var(--neon-green)' }}
+                />
+                <Area 
+                  type="monotone" 
+                  dataKey="value" 
+                  stroke="var(--neon-green)" 
+                  fillOpacity={1} 
+                  fill="url(#colorValue)" 
+                  isAnimationActive={true}
+                  animationDuration={600}
+                />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+          
+          <div style={{ position: 'absolute', bottom: '-28px', display: 'flex', gap: '32px', fontSize: '10px', color: 'var(--text-muted)' }}>
             <span>OPEN: <span style={{ color: '#fff', textShadow: '0 0 5px rgba(255,255,255,0.4)', fontWeight: 'bold' }}>{ohlc.O}</span></span>
             <span>HIGH: <span style={{ color: '#fff', textShadow: '0 0 5px rgba(255,255,255,0.4)', fontWeight: 'bold' }}>{ohlc.H}</span></span>
             <span>LOW: <span style={{ color: '#fff', textShadow: '0 0 5px rgba(255,255,255,0.4)', fontWeight: 'bold' }}>{ohlc.L}</span></span>
@@ -215,10 +219,15 @@ export default function TerminalView({ onDeepDive }) {
                 <div style={{ fontSize: '12px' }}>{it.name}</div>
                 <div style={{ fontSize: '9px', color: 'var(--text-muted)' }}>{it.desc}</div>
               </div>
-              <div style={{ width: '40px' }}>
-                <svg width="100%" height="20" preserveAspectRatio="none">
-                  <path d={it.trend.startsWith('+') ? "M0,15 L10,12 L20,14 L30,5 L40,8" : "M0,8 L10,5 L20,12 L30,10 L40,15"} fill="none" stroke={it.color} strokeWidth="1.5" />
-                </svg>
+              <div style={{ width: '40px', height: '20px' }}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={
+                    // Generate a quick stable mock array depending on timeframe string
+                    Array.from({length: 6}).map((_, i) => ({ val: Math.random() * (timeframe === '1D' ? 10 : timeframe === '1W' ? 20 : 50) + (it.trend.startsWith('+') ? i : 6-i) }))
+                  }>
+                    <Area type="monotone" dataKey="val" stroke={it.color} fill="none" strokeWidth={1.5} isAnimationActive={true} animationDuration={600} />
+                  </AreaChart>
+                </ResponsiveContainer>
               </div>
               <div style={{ textAlign: 'right', width: '40px' }}>
                 <div style={{ fontSize: '12px' }}>{it.val}</div>

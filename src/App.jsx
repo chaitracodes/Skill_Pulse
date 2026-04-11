@@ -11,14 +11,24 @@ import DeepDiveView from './views/DeepDiveView';
 
 function App() {
   const [currentRoute, setCurrentRoute] = useState('LANDING');
+  const [activeDeepDive, setActiveDeepDive] = useState('PYTHON');
+  const [watchlist, setWatchlist] = useState(['PYTHON', 'TYPESCRIPT', 'RUST', 'GOLANG']);
 
   const handleNavigate = (route) => {
     setCurrentRoute(route);
   };
 
   const handleDeepDive = (assetId) => {
-    // When clicking an asset in the Watchlist inside TerminalView
+    setActiveDeepDive(assetId);
     setCurrentRoute('DEEP_DIVE');
+  };
+
+  const toggleWatchlist = (assetId) => {
+    setWatchlist(prev => 
+      prev.includes(assetId) 
+        ? prev.filter(a => a !== assetId)
+        : [...prev, assetId]
+    );
   };
 
   const renderView = () => {
@@ -26,10 +36,15 @@ function App() {
       case 'LIQUIDITY':
         return <StakingView />;
       case 'LANDING':
-        return <LandingView onNavigate={handleNavigate} />;
+        return <LandingView onNavigate={handleNavigate} onResumeParsed={(data) => {
+          setWatchlist(prev => {
+             const newSkills = data.filter(skill => !prev.includes(skill));
+             return [...prev, ...newSkills];
+          });
+        }} />;
       case 'DASHBOARD':
       case 'TERMINAL':
-        return <TerminalView onDeepDive={handleDeepDive} />;
+        return <TerminalView onDeepDive={handleDeepDive} watchlist={watchlist} />;
       case 'LEARNING_HUB':
         return <PortfolioView />;
       case 'MARKETS':
@@ -39,7 +54,7 @@ function App() {
       case 'ROADMAP': // Access via links or alternate flows
         return <RoadmapView />;
       case 'DEEP_DIVE':
-        return <DeepDiveView />;
+        return <DeepDiveView assetId={activeDeepDive} watchlist={watchlist} toggleWatchlist={toggleWatchlist} />;
       default:
         return <LandingView onNavigate={handleNavigate} />;
     }
