@@ -1,3 +1,14 @@
+"""
+AI Module for SkillPulse
+
+This module acts as the core interface to the Groq API (using the LLaMA 3.1 model).
+It handles prompt generation, API calls, and JSON parsing for:
+- Skill extraction from unstructured text.
+- Job role recommendations.
+- What-if scenario evaluations.
+- Missing skills and roadmap generation.
+"""
+
 import os
 import json
 from groq import Groq

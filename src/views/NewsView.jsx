@@ -1,3 +1,8 @@
+/**
+ * NewsView.jsx
+ * 
+ * Financial-style interface tracking global technology news feeds and sentiment.
+ */
 import React, { useState, useEffect } from 'react';
 
 export default function NewsView() {

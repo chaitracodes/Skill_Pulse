@@ -1,3 +1,8 @@
+/**
+ * StakingView.jsx
+ * 
+ * Gamification view simulating career 'staking' or investing in future learning paths.
+ */
 import React from 'react';
 
 export default function StakingView() {

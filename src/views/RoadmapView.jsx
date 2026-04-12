@@ -1,3 +1,8 @@
+/**
+ * RoadmapView.jsx
+ * 
+ * Visual timeline rendering of the career progression roadmap.
+ */
 import React from 'react';
 import { CheckCircle, MoreHorizontal, Lock, Gift } from 'lucide-react';
 

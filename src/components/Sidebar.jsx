@@ -1,3 +1,8 @@
+/**
+ * Sidebar.jsx
+ * 
+ * Global Sidebar component providing primary navigation across the application views.
+ */
 import React from 'react';
 import { LayoutGrid, Database, BookOpen, Newspaper, User, Settings } from 'lucide-react';
 

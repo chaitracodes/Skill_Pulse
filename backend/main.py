@@ -1,3 +1,11 @@
+"""
+SkillPulse Main API Router
+
+This module is the entry point for the FastAPI application. It defines endpoints
+for resume analysis, market trend synthesis, live tech news fetching, and
+AI what-if career simulations.
+"""
+
 import time
 import urllib.request
 import xml.etree.ElementTree as ET

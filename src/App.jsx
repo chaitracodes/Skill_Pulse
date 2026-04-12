@@ -10,6 +10,15 @@ import StakingView from './views/StakingView';
 import SkillGapView from './views/SkillGapView';
 import ProfileView from './views/ProfileView';
 
+/**
+ * App component: Root interface for the SkillPulse Application.
+ * 
+ * Manages global view routing, user profile state (watchlists, known skills), 
+ * and active learning hub data. Renders the Sidebar, TopNav, and dynamically 
+ * injects the active View component.
+ * 
+ * @returns {JSX.Element} The rendered React application.
+ */
 function App() {
   const [currentRoute, setCurrentRoute] = useState('LANDING');
   const [activeDeepDive, setActiveDeepDive] = useState('Python');

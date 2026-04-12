@@ -1,3 +1,12 @@
+"""
+Market/Trend Demand Simulation Module
+
+This module simulates real-world job market demand and momentum since 
+live historical Google Trends integration is sometimes flaky. It uses LLMs
+to synthesize realistic trajectory data (upward/downward) for skills 
+and transforms it into pandas DataFrames and OHLC stock market candles.
+"""
+
 import time
 import random
 import pandas as pd
@@ -14,8 +23,20 @@ TIMEFRAME_MAP = {
 
 def fetch_skill_trends(skills: list, timeframe="today 5-y", geo="IN"):
     """
-    Synthesizes interest-over-time for up to 5 skills using Groq/Llama-3.1.
-    Returns a pandas DataFrame matching the classic PyTrends structure.
+    Synthesizes interest-over-time for up to 5 skills using a Groq/Llama-3.1 model.
+    
+    Instead of making live Google Trends queries, this engine generates 60 days of
+    synthetic historical integer data based on realistic career trajectories to ensure
+    application reliability.
+
+    Args:
+        skills (list): Up to 5 specific tech skills.
+        timeframe (str, optional): Currently ignored in synthetic generation.
+        geo (str, optional): Currently ignored.
+
+    Returns:
+        pd.DataFrame: A pandas DataFrame containing columns for each skill and 
+            DatetimeIndex mapping the last 60 days.
     """
     if not skills:
         return pd.DataFrame()
@@ -90,7 +111,14 @@ def fetch_skill_trends(skills: list, timeframe="today 5-y", geo="IN"):
 
 def process_trends_matrix(df: pd.DataFrame, skills: list) -> dict:
     """
-    Converts DataFrame to a numerical matrix structure.
+    Converts a pandas trend DataFrame to a JSON-serializable multidimensional numerical matrix.
+    
+    Args:
+        df (pd.DataFrame): Input DataFrame containing trends for skills.
+        skills (list): Required columns to extract.
+
+    Returns:
+        dict: Processed matrix structured as {"shape": [rows, cols], "matrix": [...], "dates": [...], "skills": [...]}
     """
     if df.empty:
         return {"shape": [0, 0], "matrix": [], "dates": [], "skills": []}

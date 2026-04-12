@@ -1,3 +1,8 @@
+/**
+ * SkillChart.jsx
+ * 
+ * Complex Recharts-based Skill Web Chart displaying known skills, missing skills, and overall gaps.
+ */
 import React, { useState, useEffect, useReducer, useRef, useCallback } from 'react';
 import { 
   LineChart, AreaChart, Line, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, 

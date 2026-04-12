@@ -1,3 +1,8 @@
+/**
+ * TopNav.jsx
+ * 
+ * Global Top Navigation bar displaying contextual actions and the current active route.
+ */
 import React, { useEffect, useState } from 'react';
 import { Bell, Settings, User, Moon, Sun } from 'lucide-react';
 

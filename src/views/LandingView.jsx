@@ -1,3 +1,8 @@
+/**
+ * LandingView.jsx
+ * 
+ * Initial onboarding view. Allows users to upload a resume or manually enter skills to initialize the application state.
+ */
 import React, { useState, useRef } from 'react';
 
 const JOB_ROLES = [

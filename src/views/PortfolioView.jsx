@@ -1,3 +1,8 @@
+/**
+ * PortfolioView.jsx
+ * 
+ * Displays visual skill progression and career assets. (Placeholder/Extension).
+ */
 import React, { useState } from 'react';
 
 export default function PortfolioView() {

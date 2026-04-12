@@ -1,16 +1,54 @@
-# React + Vite
+# SkillPulse: AI Career Learning Hub
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+SkillPulse is an AI-powered career ecosystem designed to help you analyze your current skill set, understand market trends, and get job-ready for your target roles. It transforms raw resume data into actionable learning roadmaps, complete with market analytics and what-if career simulations.
 
-Currently, two official plugins are available:
+## Key Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- **AI Career Intelligence**: Upload your resume (PDF/TXT), and our intelligent backend extracts your skills, projects, and maps them directly to the best-fitting job roles.
+- **Dynamic Learning Hub & Skill Gaps**: Visualizes your career readiness using interactive charts. It builds personalized learning roadmaps, neatly distinguishing between finding resources to learn new skills and revising the ones you already know.
+- **Market Intelligence**: Fetches real-time skill demand from Google Trends and presents it in a visually engaging "stock-market" style. Live tech news briefs keep you updated on the broader ecosystem.
+- **Terminal & What-If Simulations**: Want to know what happens if you learn a specific new skill or apply for a different role? The AI terminal evaluates hypothetical career scenarios to guide your path forward.
 
-## React Compiler
+## Technology Stack
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- **Frontend**: React, Vite, Lucide React (for icons), and Recharts (for rich, dynamic charts like skill spider webs).
+- **Backend**: FastAPI (Python), PyMuPDF (resume parsing), Groq API (fast LLM inferences), Pytrends (market data), Pandas & Numpy.
 
-## Expanding the ESLint configuration
+## Getting Started
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+### Prerequisites
+- Node.js & npm (for the frontend)
+- Python 3.9+ (for the backend)
+- A Groq API Key (for the AI features)
+
+### 1. Backend Setup
+
+Open a terminal and navigate to the `backend` directory:
+
+```bash
+cd backend
+pip install -r requirements.txt
+```
+
+Create a `.env` file in the `backend` directory and add your Groq API key:
+
+```env
+GROQ_API_KEY=your_groq_api_key_here
+```
+
+Start the FastAPI development server:
+
+```bash
+uvicorn main:app --reload
+```
+
+### 2. Frontend Setup
+
+Open a new terminal in the project root directory:
+
+```bash
+npm install
+npm run dev
+```
+
+Your browser should automatically open to `http://localhost:5173` (or the port specified by Vite). Upload your resume and let the AI build your career pulse!

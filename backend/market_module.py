@@ -1,10 +1,31 @@
+"""
+Market Module for SkillPulse
+
+This module processes processed skill trend data and assigns market
+indicators (BUY/SELL/HOLD) based on growth thresholds to simulate a 
+financial market environment for technical skills.
+"""
+
 import numpy as np
 
 def generate_signals(trend_info: dict, threshold: float = 0.1) -> list:
     """
     Computes market metrics for each skill in the trend matrix and assigns BUY/SELL/HOLD.
-    Expects trend_info to have structure:
-    {"matrix": [...], "skills": [...], "dates": [...]}
+    
+    This function analyzes the latest data points from Google Trends interest-over-time 
+    data to simulate stock market-like momentum for a specific tech skill. 
+    A skill is deemed bullish ('BUY') if its growth rate over the period exceeds 
+    the given threshold.
+
+    Args:
+        trend_info (dict): The processed trend matrix payload.
+            Expected structure: {"matrix": [[...], ...], "skills": ["skill1", ...], "dates": [...]}
+        threshold (float): The minimum percentage growth rate required to trigger 
+            a BUY or SELL signal. Default is 0.1 (10%).
+
+    Returns:
+        list: A list of dicts, each documenting the market signals for a skill:
+            [{"skill": "str", "action": "BUY|SELL|HOLD", "growth_rate": float, ...}]
     """
     matrix = trend_info.get("matrix", [])
     skills = trend_info.get("skills", [])

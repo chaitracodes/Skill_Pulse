@@ -1,3 +1,8 @@
+/**
+ * SkillGapView.jsx
+ * 
+ * Detailed analytical view matching an individual skill against market demand and associated tech stacks.
+ */
 import React, { useState, useEffect } from 'react';
 
 export default function SkillGapView({ assetId = 'Python', watchlist = [], toggleWatchlist }) {

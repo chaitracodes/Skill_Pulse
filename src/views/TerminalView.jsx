@@ -1,3 +1,8 @@
+/**
+ * TerminalView.jsx
+ * 
+ * Central interactive hub for tracking learning trajectories, what-if market scenarios, and active job role watchlists.
+ */
 import React, { useState, useEffect, useCallback } from 'react';
 import {
   AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer,

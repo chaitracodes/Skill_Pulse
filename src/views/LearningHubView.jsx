@@ -1,3 +1,8 @@
+/**
+ * LearningHubView.jsx
+ * 
+ * Dynamic AI-driven view that contrasts known skills vs required skills and provides weekly actionable roadmaps.
+ */
 import React, { useMemo } from 'react';
 
 export default function LearningHubView({ jobRole, knownSkills = [], roadmap, completedCheckpoints = [], setCompletedCheckpoints }) {

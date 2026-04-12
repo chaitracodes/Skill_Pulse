@@ -1,3 +1,8 @@
+/**
+ * ProfileView.jsx
+ * 
+ * User profile dashboard centralizing known skills, checkpoints, and persistent settings.
+ */
 import React, { useMemo } from 'react';
 import { Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer, Tooltip } from 'recharts';
 
