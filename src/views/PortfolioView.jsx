@@ -45,7 +45,7 @@ export default function PortfolioView() {
   const activeContent = learningData[activeSkill][activeTab.toLowerCase()];
 
   return (
-    <div style={{ marginLeft: '80px', padding: '64px', position: 'relative', minHeight: 'calc(100vh - 60px)' }}>
+    <div style={{ padding: '64px', position: 'relative', minHeight: 'calc(100vh - 60px)' }}>
       
       <div style={{ display: 'flex', gap: '64px' }}>
         

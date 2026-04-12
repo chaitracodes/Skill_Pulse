@@ -143,10 +143,10 @@ export default function TerminalView({
 
   // ── Derived chart arrays ─────────────────────────────────────────────────
   const combinedData = [...rawData, ...predictiveData];
-  const lineData = combinedData.map(d => ({ 
-    time: d.date, 
-    value: d.isPrediction ? null : d.close, 
-    predictedValue: d.isPrediction ? d.close : null 
+  const lineData = combinedData.map(d => ({
+    time: d.date,
+    value: d.isPrediction ? null : d.close,
+    predictedValue: d.isPrediction ? d.close : null
   }));
   if (rawData.length > 0 && predictiveData.length > 0) {
     lineData[rawData.length - 1].predictedValue = lineData[rawData.length - 1].value;
@@ -171,7 +171,7 @@ export default function TerminalView({
   const activeList = activeWL === 1 ? watchlist1 : activeWL === 2 ? watchlist2 : watchlist3;
 
   return (
-    <div style={{ display: 'flex', height: 'calc(100vh - 60px)', marginLeft: '80px', overflow: 'hidden' }}>
+    <div style={{ display: 'flex', height: 'calc(100vh - 60px)', overflow: 'hidden' }}>
 
       {/* ── Main Chart Area ── */}
       <div style={{ flex: 1, padding: '28px 32px', display: 'flex', flexDirection: 'column', borderRight: '1px solid var(--border-ghost)', overflow: 'auto' }}>
@@ -208,7 +208,7 @@ export default function TerminalView({
 
         {/* Timeframe */}
         <div style={{ display: 'flex', gap: '6px', marginBottom: '16px', alignItems: 'center' }}>
-          {['1D', '1W', '1M', '3M', '1Y', 'ALL'].map(tf => (
+          {['1W', '1M', '6M', '1Y', 'ALL'].map(tf => (
             <span key={tf} onClick={() => handleTimeframeSwitch(tf)} style={{
               fontSize: '10px', padding: '4px 10px', cursor: 'pointer',
               color: timeframe === tf ? '#00FF88' : 'var(--text-muted)',
@@ -324,13 +324,13 @@ export default function TerminalView({
                       });
                       const data = await res.json();
                       setSimulationResult(data);
-                      
+
                       const lastPoint = rawData[rawData.length - 1];
                       let currentVal = lastPoint.close;
                       const targetVal = currentVal * (1 + (data.impact_percent / 100));
                       const points = [];
                       const lastDate = new Date(lastPoint.date);
-                      
+
                       for (let i = 1; i <= 24; i++) {
                         const stepDate = new Date(lastDate);
                         stepDate.setMonth(stepDate.getMonth() + i);
@@ -338,17 +338,17 @@ export default function TerminalView({
                         const ease = progress < 0.5 ? 2 * progress * progress : -1 + (4 - 2 * progress) * progress;
                         const smoothTarget = currentVal + (targetVal - currentVal) * ease;
                         const noise = (Math.random() - 0.5) * (currentVal * 0.15); // 15% volatility
-                        
+
                         const predictedClose = Math.max(0, smoothTarget + noise);
-                        const predictedOpen = points.length > 0 ? points[points.length-1].close : currentVal;
+                        const predictedOpen = points.length > 0 ? points[points.length - 1].close : currentVal;
                         points.push({
-                           date: stepDate.toISOString().split('T')[0],
-                           open: parseFloat(predictedOpen.toFixed(2)),
-                           close: parseFloat(predictedClose.toFixed(2)),
-                           high: parseFloat((Math.max(predictedOpen, predictedClose) * 1.05).toFixed(2)),
-                           low: parseFloat((Math.min(predictedOpen, predictedClose) * 0.95).toFixed(2)),
-                           volume: lastPoint.volume * (1 + (Math.random() - 0.5)),
-                           isPrediction: true
+                          date: stepDate.toISOString().split('T')[0],
+                          open: parseFloat(predictedOpen.toFixed(2)),
+                          close: parseFloat(predictedClose.toFixed(2)),
+                          high: parseFloat((Math.max(predictedOpen, predictedClose) * 1.05).toFixed(2)),
+                          low: parseFloat((Math.min(predictedOpen, predictedClose) * 0.95).toFixed(2)),
+                          volume: lastPoint.volume * (1 + (Math.random() - 0.5)),
+                          isPrediction: true
                         });
                       }
                       setPredictiveData(points);
@@ -363,7 +363,7 @@ export default function TerminalView({
               }}
             />
             <button
-               // The exact same onClick logic bound above to button
+              // The exact same onClick logic bound above to button
               disabled={simulationLoading}
               onClick={async () => {
                 if (!simulationPrompt || !activeRole || rawData.length === 0) return;
@@ -388,12 +388,12 @@ export default function TerminalView({
                     const smoothTarget = currentVal + (targetVal - currentVal) * ease;
                     const noise = (Math.random() - 0.5) * (currentVal * 0.15);
                     const predictedClose = Math.max(0, smoothTarget + noise);
-                    const predictedOpen = points.length > 0 ? points[points.length-1].close : currentVal;
+                    const predictedOpen = points.length > 0 ? points[points.length - 1].close : currentVal;
                     points.push({
-                       date: stepDate.toISOString().split('T')[0],
-                       open: parseFloat(predictedOpen.toFixed(2)), close: parseFloat(predictedClose.toFixed(2)),
-                       high: parseFloat((Math.max(predictedOpen, predictedClose) * 1.05).toFixed(2)), low: parseFloat((Math.min(predictedOpen, predictedClose) * 0.95).toFixed(2)),
-                       volume: lastPoint.volume * (1 + (Math.random() - 0.5)), isPrediction: true
+                      date: stepDate.toISOString().split('T')[0],
+                      open: parseFloat(predictedOpen.toFixed(2)), close: parseFloat(predictedClose.toFixed(2)),
+                      high: parseFloat((Math.max(predictedOpen, predictedClose) * 1.05).toFixed(2)), low: parseFloat((Math.min(predictedOpen, predictedClose) * 0.95).toFixed(2)),
+                      volume: lastPoint.volume * (1 + (Math.random() - 0.5)), isPrediction: true
                     });
                   }
                   setPredictiveData(points);
@@ -408,15 +408,15 @@ export default function TerminalView({
               {simulationLoading ? 'COMPUTING...' : 'EXECUTE'}
             </button>
           </div>
-          
+
           {simulationResult && (
             <div style={{ marginTop: '16px', borderTop: '1px solid rgba(176,38,255,0.2)', paddingTop: '16px', display: 'flex', gap: '24px', alignItems: 'center' }}>
-                <div style={{ fontSize: '32px', fontWeight: 'bold', color: simulationResult.impact_percent >= 0 ? '#00FF88' : '#FF4444', fontFamily: "'Space Mono', monospace" }}>
-                    {simulationResult.impact_percent > 0 ? '+' : ''}{simulationResult.impact_percent}%
-                </div>
-                <div style={{ flex: 1, fontSize: '11px', color: '#F0F0F0', lineHeight: 1.6, fontFamily: "'JetBrains Mono', monospace", borderLeft: '1px solid rgba(176,38,255,0.2)', paddingLeft: '16px' }}>
-                    <span style={{ color: '#B026FF', fontWeight: 'bold' }}>AI ORACLE REASON:</span> {simulationResult.reason}
-                </div>
+              <div style={{ fontSize: '32px', fontWeight: 'bold', color: simulationResult.impact_percent >= 0 ? '#00FF88' : '#FF4444', fontFamily: "'Space Mono', monospace" }}>
+                {simulationResult.impact_percent > 0 ? '+' : ''}{simulationResult.impact_percent}%
+              </div>
+              <div style={{ flex: 1, fontSize: '11px', color: '#F0F0F0', lineHeight: 1.6, fontFamily: "'JetBrains Mono', monospace", borderLeft: '1px solid rgba(176,38,255,0.2)', paddingLeft: '16px' }}>
+                <span style={{ color: '#B026FF', fontWeight: 'bold' }}>AI ORACLE REASON:</span> {simulationResult.reason}
+              </div>
             </div>
           )}
         </div>
@@ -444,8 +444,8 @@ export default function TerminalView({
           {activeWL === 1
             ? 'YOUR TARGET JOB ROLES (WL1)'
             : activeWL === 2
-            ? 'YOUR SEARCHED JOB ROLES (WL2)'
-            : 'YOUR CUSTOM WATCHLIST (WL3)'}
+              ? 'YOUR SEARCHED JOB ROLES (WL2)'
+              : 'YOUR CUSTOM WATCHLIST (WL3)'}
         </div>
 
         {/* Search bar for WL2/WL3 */}
@@ -466,8 +466,8 @@ export default function TerminalView({
               {activeWL === 1
                 ? 'Upload your résumé on the\nLanding page to auto-populate\nyour predicted job roles.'
                 : activeWL === 2
-                ? 'Search and track custom job\nroles using the input above.'
-                : 'Search and add custom entries\nabove to start tracking.'}
+                  ? 'Search and track custom job\nroles using the input above.'
+                  : 'Search and add custom entries\nabove to start tracking.'}
             </div>
           ) : (
             activeList.map(role => (
@@ -478,9 +478,9 @@ export default function TerminalView({
                 onClick={(r) => handleRoleSwitch(r)}
                 actionElement={
                   (activeWL === 1 || activeWL === 2) && (
-                    <button 
-                       onClick={(e) => { e.stopPropagation(); onGetJobReady && onGetJobReady(role); }}
-                       style={{ background: '#00D4FF', border: 'none', color: '#000', padding: '6px 12px', fontSize: '9px', fontWeight: 'bold', cursor: 'pointer', fontFamily: "'JetBrains Mono', monospace", width: '100%', marginTop: '4px' }}
+                    <button
+                      onClick={(e) => { e.stopPropagation(); onGetJobReady && onGetJobReady(role); }}
+                      style={{ background: '#00D4FF', border: 'none', color: '#000', padding: '6px 12px', fontSize: '9px', fontWeight: 'bold', cursor: 'pointer', fontFamily: "'JetBrains Mono', monospace", width: '100%', marginTop: '4px' }}
                     >
                       GET JOB READY →
                     </button>

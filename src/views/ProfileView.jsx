@@ -52,7 +52,7 @@ export default function ProfileView({ knownSkills = [], completedCheckpoints = [
   const neuralLevel = Math.floor(Math.sqrt(totalPoints * 10)) + 1;
 
   return (
-    <div style={{ marginLeft: '80px', padding: '64px', minHeight: 'calc(100vh - 60px)', maxWidth: '1200px' }}>
+    <div style={{ padding: '64px', minHeight: 'calc(100vh - 60px)', maxWidth: '1200px' }}>
 
       {/* ── Header ── */}
       <div style={{ marginBottom: '64px' }}>

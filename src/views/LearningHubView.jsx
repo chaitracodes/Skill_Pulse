@@ -3,12 +3,13 @@
  * 
  * Dynamic AI-driven view that contrasts known skills vs required skills and provides weekly actionable roadmaps.
  */
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 
-export default function LearningHubView({ jobRole, knownSkills = [], roadmap, completedCheckpoints = [], setCompletedCheckpoints }) {
+export default function LearningHubView({ jobRole, knownSkills = [], roadmap, completedCheckpoints = [], setCompletedCheckpoints, onInitializeProject }) {
   
   const matchedSkills = roadmap?.matched || knownSkills || [];
   const missingSkills = roadmap?.missing || [];
+  const [pendingRedirect, setPendingRedirect] = useState(null);
   
   const allCount = matchedSkills.length + missingSkills.length;
   // Fallbacks if backend doesn't resolve
@@ -35,7 +36,7 @@ export default function LearningHubView({ jobRole, knownSkills = [], roadmap, co
   };
 
   return (
-    <div style={{ marginLeft: '80px', padding: '64px', minHeight: 'calc(100vh - 60px)', maxWidth: '1200px' }}>
+    <div style={{ padding: '64px', minHeight: 'calc(100vh - 60px)', maxWidth: '1200px' }}>
       
       {/* ── Header ── */}
       <div style={{ marginBottom: '64px', textAlign: 'center' }}>
@@ -99,22 +100,8 @@ export default function LearningHubView({ jobRole, knownSkills = [], roadmap, co
               }}>
                 
                 <div style={{ display: 'flex', flexWrap: 'wrap' }}>
-                  {/* Left: Multimedia Box */}
-                  <div style={{ 
-                    flex: '1 1 300px', minHeight: '200px', position: 'relative', 
-                    background: `linear-gradient(135deg, #111, ${accentColor}20)`,
-                    borderRight: '1px solid var(--border-ghost)', display: 'flex', alignItems: 'center', justifyContent: 'center'
-                  }}>
-                    <div style={{ position: 'absolute', inset: 0, opacity: 0.1, backgroundImage: 'radial-gradient(circle at 2px 2px, #fff 1px, transparent 0)', backgroundSize: '24px 24px' }} />
-                    
-                    {/* Fake Play Button Overlay */}
-                    <div style={{ width: '64px', height: '64px', borderRadius: '50%', backgroundColor: `rgba(0,0,0,0.6)`, border: `1px solid ${accentColor}`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: accentColor, fontSize: '24px', cursor: 'pointer', zIndex: 2, backdropFilter: 'blur(4px)' }}>
-                      ▶
-                    </div>
-                  </div>
-
                   {/* Right: Info Box */}
-                  <div style={{ flex: '2 1 400px', padding: '32px', display: 'flex', flexDirection: 'column' }}>
+                  <div style={{ flex: '1', padding: '32px', display: 'flex', flexDirection: 'column' }}>
                     <div style={{ fontSize: '10px', color: accentColor, marginBottom: '12px', fontFamily: "'JetBrains Mono', monospace", padding: '4px 8px', border: `1px solid ${accentColor}`, display: 'inline-block', alignSelf: 'flex-start' }}>
                       {node.label}
                     </div>
@@ -123,18 +110,39 @@ export default function LearningHubView({ jobRole, knownSkills = [], roadmap, co
                       {node.skill}
                     </h2>
                     
-                    <p style={{ color: 'var(--text-muted)', fontSize: '13px', lineHeight: '1.6', marginBottom: '32px' }}>
+                    <p style={{ color: 'var(--text-muted)', fontSize: '13px', lineHeight: '1.6', marginBottom: '32px', maxWidth: '800px' }}>
                       {node.type === 'MISSING' 
                         ? `You have a gap in this area. Master the core principles, syntax, and architectural patterns of ${node.skill} to align with industry requirements.` 
                         : `You have previous experience here. Review this rapid refresher to ensure your knowledge scales to enterprise-level architecture.`}
                     </p>
 
-                    <div style={{ display: 'flex', gap: '16px', marginTop: 'auto' }}>
-                       <a href={`https://www.youtube.com/results?search_query=${node.skill}`} target="_blank" rel="noreferrer" style={{ fontSize: '11px', color: '#FFF', textDecoration: 'none', borderBottom: '1px solid var(--text-muted)', paddingBottom: '2px', fontFamily: "'JetBrains Mono', monospace" }}>
-                         VIEW COURSE →
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px', marginTop: 'auto' }}>
+                       <a href={`https://www.youtube.com/results?search_query=${node.skill}`} 
+                          onClick={(e) => { e.preventDefault(); setPendingRedirect({ url: `https://www.youtube.com/results?search_query=${node.skill}`, platform: 'YouTube' }); }}
+                          style={{ 
+                           background: `linear-gradient(135deg, ${accentColor}10, transparent)`, border: `1px solid ${accentColor}`, 
+                           padding: '12px 20px', fontSize: '11px', color: '#FFF', textDecoration: 'none', fontFamily: "'JetBrains Mono', monospace",
+                           display: 'flex', alignItems: 'center', gap: '8px', borderRadius: '4px', transition: 'background 0.2s', cursor: 'pointer'
+                       }}>
+                         ▶ CLICK HERE FOR VIDEO
                        </a>
-                       <a href={`https://dev.to/search?q=${node.skill}`} target="_blank" rel="noreferrer" style={{ fontSize: '11px', color: '#FFF', textDecoration: 'none', borderBottom: '1px solid var(--text-muted)', paddingBottom: '2px', fontFamily: "'JetBrains Mono', monospace" }}>
-                         READ DOCUMENTATION →
+                       <a href={`https://dev.to/search?q=${node.skill}`} 
+                          onClick={(e) => { e.preventDefault(); setPendingRedirect({ url: `https://dev.to/search?q=${node.skill}`, platform: 'Dev.to (Developer Community)' }); }}
+                          style={{ 
+                           background: `linear-gradient(135deg, ${accentColor}10, transparent)`, border: `1px solid ${accentColor}`, 
+                           padding: '12px 20px', fontSize: '11px', color: '#FFF', textDecoration: 'none', fontFamily: "'JetBrains Mono', monospace",
+                           display: 'flex', alignItems: 'center', gap: '8px', borderRadius: '4px', transition: 'background 0.2s', cursor: 'pointer'
+                       }}>
+                         📄 CLICK HERE FOR BLOG PAGE TO READ
+                       </a>
+                       <a href={`https://www.udemy.com/courses/search/?src=ukw&q=${node.skill}`} 
+                          onClick={(e) => { e.preventDefault(); setPendingRedirect({ url: `https://www.udemy.com/courses/search/?src=ukw&q=${node.skill}`, platform: 'Udemy' }); }}
+                          style={{ 
+                           background: `linear-gradient(135deg, ${accentColor}10, transparent)`, border: `1px solid ${accentColor}`, 
+                           padding: '12px 20px', fontSize: '11px', color: '#FFF', textDecoration: 'none', fontFamily: "'JetBrains Mono', monospace",
+                           display: 'flex', alignItems: 'center', gap: '8px', borderRadius: '4px', transition: 'background 0.2s', cursor: 'pointer'
+                       }}>
+                         🛒 CLICK HERE TO PURCHASE GOOD COURSE
                        </a>
                     </div>
                   </div>
@@ -193,13 +201,47 @@ export default function LearningHubView({ jobRole, knownSkills = [], roadmap, co
               <li>Write comprehensive integration tests covering 90% of business logic.</li>
             </ul>
             <div style={{ marginTop: '32px' }}>
-              <button style={{ backgroundColor: '#B026FF', color: '#fff', border: 'none', padding: '16px 32px', fontSize: '12px', fontWeight: 'bold', fontFamily: "'JetBrains Mono', monospace", cursor: 'pointer', boxShadow: '0 0 20px rgba(176,38,255,0.4)' }}>
+              <button 
+                onClick={onInitializeProject}
+                style={{ backgroundColor: '#B026FF', color: '#fff', border: 'none', padding: '16px 32px', fontSize: '12px', fontWeight: 'bold', fontFamily: "'JetBrains Mono', monospace", cursor: 'pointer', boxShadow: '0 0 20px rgba(176,38,255,0.4)', transition: 'all 0.2s', textTransform: 'uppercase' }}
+              >
                 INITIALIZE BUILD SEQUENCE →
               </button>
             </div>
           </div>
         )}
       </div>
+
+      {/* Redirect Confirmation Modal */}
+      {pendingRedirect && (
+        <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(10px)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border-ghost)', padding: '40px', maxWidth: '420px', textAlign: 'center', boxShadow: '0 20px 40px rgba(0,0,0,0.5)' }}>
+            <div style={{ fontSize: '32px', marginBottom: '16px' }}>⚠️</div>
+            <h3 style={{ fontFamily: "'Neue Haas Grotesk Display Pro', sans-serif", fontSize: '24px', color: '#FFF', margin: '0 0 16px 0' }}>EXTERNAL REDIRECT</h3>
+            <p style={{ color: 'var(--text-muted)', fontSize: '14px', lineHeight: '1.6', marginBottom: '32px' }}>
+              You are about to securely leave SkillPulse and be redirected to <span style={{ color: '#00D4FF', fontWeight: 'bold' }}>{pendingRedirect.platform}</span>. Do you wish to proceed?
+            </p>
+            <div style={{ display: 'flex', gap: '16px', justifyContent: 'center' }}>
+              <button 
+                onClick={() => setPendingRedirect(null)}
+                style={{ backgroundColor: 'transparent', border: '1px solid var(--border-ghost)', color: 'var(--text-muted)', padding: '12px 24px', fontSize: '12px', fontFamily: "'JetBrains Mono', monospace", cursor: 'pointer', transition: 'all 0.2s' }}
+                onMouseOver={(e) => e.currentTarget.style.color = '#FFF'}
+                onMouseOut={(e) => e.currentTarget.style.color = 'var(--text-muted)'}
+              >
+                DISMISS
+              </button>
+              <button 
+                onClick={() => { window.open(pendingRedirect.url, '_blank'); setPendingRedirect(null); }}
+                style={{ backgroundColor: '#00D4FF', border: 'none', color: '#000', padding: '12px 24px', fontSize: '12px', fontWeight: 'bold', fontFamily: "'JetBrains Mono', monospace", cursor: 'pointer', transition: 'transform 0.2s' }}
+                onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
+                onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}
+              >
+                CONTINUE →
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
     </div>
   );

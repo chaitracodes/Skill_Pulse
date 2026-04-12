@@ -50,7 +50,7 @@ export default function NewsView() {
   }
 
   return (
-    <div style={{ marginLeft: '80px', padding: '64px', minHeight: 'calc(100vh - 60px)', display: 'flex', gap: '64px', position: 'relative' }}>
+    <div style={{ padding: '64px', minHeight: 'calc(100vh - 60px)', display: 'flex', gap: '64px', position: 'relative' }}>
       
       {/* Toast Notification */}
       {toastMessage && (

@@ -13,12 +13,11 @@ import pandas as pd
 import json
 
 TIMEFRAME_MAP = {
-    "1D":  "now 1-d",
     "1W":  "now 7-d",
     "1M":  "today 1-m",
-    "3M":  "today 3-m",
+    "6M":  "today 6-m",
     "1Y":  "today 12-m",
-    "ALL": "all",
+    "ALL": "today 5-y",
 }
 
 def fetch_skill_trends(skills: list, timeframe="today 5-y", geo="IN"):
@@ -49,13 +48,30 @@ def fetch_skill_trends(skills: list, timeframe="today 5-y", geo="IN"):
         print("Error: Groq client missing")
         return pd.DataFrame()
         
+    # Determine periods and frequency based on requested timeframe
+    if timeframe == "1W":
+        periods = 7
+        freq = "D"
+    elif timeframe == "1M":
+        periods = 30
+        freq = "D"
+    elif timeframe == "6M":
+        periods = 60
+        freq = "3D"
+    elif timeframe == "ALL":
+        periods = 60
+        freq = "30D" # ~5 years
+    else:  # 1Y default
+        periods = 60
+        freq = "6D"
+
     prompt = f"""
-    You are an economic empirical data engine. Generate realistic historical market demand tracking data representing the last 60 days for these technical skills: {skills_to_query}.
-    You must output exactly 60 data points (integers between 0 and 100) for EACH skill. Reflect modern trajectory (e.g., if a skill is growing, the array should slope upwards).
+    You are an economic empirical data engine. Generate realistic historical market demand tracking data representing the {timeframe} trajectory for these technical skills: {skills_to_query}.
+    You must output exactly {periods} data points (integers between 0 and 100) for EACH skill. Reflect modern trajectory (e.g., if a skill is growing, the array should slope upwards).
     
-    Respond EXACTLY in this JSON format mapping each skill name exactly as typed to its 60-element integer array:
+    Respond EXACTLY in this JSON format mapping each skill name exactly as typed to its {periods}-element integer array:
     {{
-      "{skills_to_query[0]}": [55, 56, 54, 55, 56, 57, ...]
+      "{skills_to_query[0]}": [55, 56, 54, 55, 56, 57]
     }}
     Do not output any markdown formatting, headers, or extra text. ONLY raw JSON.
     """
@@ -80,7 +96,7 @@ def fetch_skill_trends(skills: list, timeframe="today 5-y", geo="IN"):
         if not data or not isinstance(data, dict):
             return pd.DataFrame()
             
-        dates = pd.date_range(end=pd.Timestamp.today(), periods=60)
+        dates = pd.date_range(end=pd.Timestamp.today(), periods=periods, freq=freq)
         df_dict = {}
         
         for sk in skills_to_query:
@@ -94,12 +110,12 @@ def fetch_skill_trends(skills: list, timeframe="today 5-y", geo="IN"):
                         break
             
             if arr is None or not isinstance(arr, list):
-                arr = [0]*60
+                arr = [0]*periods
                 
-            if len(arr) < 60:
-                arr += [arr[-1] if len(arr) > 0 else 0] * (60 - len(arr))
-            elif len(arr) > 60:
-                arr = arr[:60]
+            if len(arr) < periods:
+                arr += [arr[-1] if len(arr) > 0 else 0] * (periods - len(arr))
+            elif len(arr) > periods:
+                arr = arr[:periods]
             df_dict[sk] = arr
             
         df = pd.DataFrame(df_dict, index=dates)

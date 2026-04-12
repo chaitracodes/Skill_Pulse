@@ -4,10 +4,11 @@
  * Global Top Navigation bar displaying contextual actions and the current active route.
  */
 import React, { useEffect, useState } from 'react';
-import { Bell, Settings, User, Moon, Sun } from 'lucide-react';
+import { Bell, Settings, User, Moon, Sun, LogOut } from 'lucide-react';
+import { supabase } from '../utils/supabase';
 
-export default function TopNav({ activeRoute, onNavigate }) {
-  const links = ['TERMINAL', 'MARKETS', 'STAKING', 'LEARNING_HUB', 'DEEP_DIVE', 'PROFILE'];
+export default function TopNav({ activeRoute, onNavigate, user }) {
+  const links = ['TERMINAL', 'MARKETS', 'LEARNING_HUB', 'PROJECT_TRACKER', 'PROFILE'];
 
   const [isDarkMode, setIsDarkMode] = useState(() => {
     return localStorage.getItem('theme') !== 'light';
@@ -35,8 +36,7 @@ export default function TopNav({ activeRoute, onNavigate }) {
       backdropFilter: 'blur(10px)',
       position: 'sticky',
       top: 0,
-      zIndex: 90,
-      marginLeft: '80px'
+      zIndex: 90
     }}>
       {/* Brand */}
       <div style={{
@@ -115,18 +115,36 @@ export default function TopNav({ activeRoute, onNavigate }) {
         </div>
 
         <Bell size={17} style={{ cursor: 'pointer' }} />
-        <Settings size={17} style={{ cursor: 'pointer' }} />
+        <div 
+          title="Sign Out"
+          onClick={() => supabase.auth.signOut()}
+          style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}
+        >
+          <LogOut size={17} />
+        </div>
         <div
           onClick={() => onNavigate('PROFILE')}
           style={{
-            width: '30px', height: '30px', borderRadius: '50%',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '10px',
+            padding: '5px 12px',
+            borderRadius: '20px',
             backgroundColor: 'var(--bg-surface-elevated)',
             border: activeRoute === 'PROFILE' ? '1px solid var(--neon-green)' : '1px solid var(--border-ghost)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
             cursor: 'pointer'
           }}
         >
-          <User size={14} color={activeRoute === 'PROFILE' ? 'var(--neon-green)' : 'var(--text-muted)'} />
+          <div style={{ fontSize: '11px', color: '#fff' }}>{user?.email?.split('@')[0] || 'GUEST'}</div>
+          <div
+            style={{
+              width: '24px', height: '24px', borderRadius: '50%',
+              backgroundColor: '#111',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}
+          >
+            <User size={12} color={activeRoute === 'PROFILE' ? 'var(--neon-green)' : 'var(--text-muted)'} />
+          </div>
         </div>
       </div>
     </div>

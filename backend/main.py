@@ -141,8 +141,10 @@ def get_trends(
     (Backwards compatibility for previous endpoints)
     """
     tf = timeframe.upper()
-    if tf not in TIMEFRAME_MAP:
-        raise HTTPException(status_code=400, detail=f"Invalid timeframe. Choose from: {list(TIMEFRAME_MAP.keys())}")
+    # Supported timeframes: 1W, 1M, 6M, 1Y, ALL
+    VALID_TF = ["1W", "1M", "6M", "1Y", "ALL"]
+    if tf not in VALID_TF:
+        raise HTTPException(status_code=400, detail=f"Invalid timeframe. Choose from: {VALID_TF}")
 
     key = cache_key(skill, tf)
     cached = get_cached(key)
@@ -150,7 +152,7 @@ def get_trends(
         return {"skill": skill, "timeframe": tf, "source": "cache", "candles": cached}
 
     try:
-        df = fetch_skill_trends([skill], timeframe=TIMEFRAME_MAP[tf], geo="")
+        df = fetch_skill_trends([skill], timeframe=tf, geo="")
         if df.empty or skill not in df.columns:
             raise HTTPException(status_code=404, detail=f"No trend data found for '{skill}'")
 
@@ -324,6 +326,22 @@ def get_learning_roadmap(data: LearningRoadmapRequest):
     from ai_module import generate_learning_roadmap
     try:
         result = generate_learning_roadmap(data.target_role, data.known_skills)
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+class ProjectPlanRequest(BaseModel):
+    target_role: str
+    skills: list[str]
+
+@app.post("/api/project-plan")
+def get_project_plan(data: ProjectPlanRequest):
+    """
+    Generates a 7-day capstone project plan.
+    """
+    from ai_module import generate_project_plan
+    try:
+        result = generate_project_plan(data.target_role, data.skills)
         return result
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

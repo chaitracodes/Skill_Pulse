@@ -41,7 +41,7 @@ export default function RoadmapView() {
   ];
 
   return (
-    <div style={{ marginLeft: '80px', padding: '64px', minHeight: 'calc(100vh - 60px)' }}>
+    <div style={{ padding: '64px', minHeight: 'calc(100vh - 60px)' }}>
       
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '80px' }}>
         <div>

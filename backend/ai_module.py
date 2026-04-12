@@ -243,3 +243,51 @@ def generate_learning_roadmap(target_role: str, known_skills: list) -> dict:
         print(f"Error generating roadmap: {e}")
         return {"matched": [], "missing": [], "recommendation": "Failed to analyze roadmap.", "roadmap": []}
 
+def generate_project_plan(target_role: str, skills: list) -> dict:
+    """
+    Generates a 7-day Capstone Project plan with implementation tips.
+    """
+    client = get_groq_client()
+    if not client:
+        return {"project_name": "API Key Missing", "timeline": []}
+        
+    prompt = f"""
+    The user is a {target_role} who knows {', '.join(skills)}.
+    Generate a 7-day Capstone Project plan that integrates these skills into a realistic, deployable portfolio piece.
+    
+    Respond EXACTLY with this JSON format:
+    {{
+      "project_name": "Short Catchy Name of the Project",
+      "description": "Brief 1-sentence description of the project.",
+      "timeline": [
+         {{ "day": "Day 1", "title": "System Architecture", "task": "Design schemas...", "tip": "Implementation Tip: Set up Docker Compose early. Use XYZ pattern..." }},
+         {{ "day": "Day 2", "title": "...", "task": "...", "tip": "..." }},
+         {{ "day": "Day 3", "title": "...", "task": "...", "tip": "..." }},
+         {{ "day": "Day 4", "title": "...", "task": "...", "tip": "..." }},
+         {{ "day": "Day 5", "title": "...", "task": "...", "tip": "..." }},
+         {{ "day": "Day 6", "title": "...", "task": "...", "tip": "..." }},
+         {{ "day": "Day 7", "title": "...", "task": "...", "tip": "..." }}
+      ]
+    }}
+    """
+    
+    try:
+        chat_completion = client.chat.completions.create(
+            messages=[
+                {"role": "system", "content": "You are a specialized AI that only outputs valid JSON objects."},
+                {"role": "user", "content": prompt}
+            ],
+            model="llama-3.1-8b-instant",
+        )
+        content = chat_completion.choices[0].message.content.strip()
+        if content.startswith("```json"):
+            content = content[7:-3].strip()
+        elif content.startswith("```"):
+            content = content[3:-3].strip()
+            
+        result = json.loads(content)
+        return result
+    except Exception as e:
+        print(f"Error generating project plan: {e}")
+        return {"project_name": "Generation Failed", "timeline": []}
+

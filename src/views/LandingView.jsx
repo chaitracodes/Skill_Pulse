@@ -5,11 +5,33 @@
  */
 import React, { useState, useRef } from 'react';
 
-const JOB_ROLES = [
-  'Frontend Developer', 'Backend Developer', 'Full Stack Developer',
-  'DevOps Engineer', 'Cloud Architect', 'Data Scientist',
-  'Data Engineer', 'Machine Learning Engineer', 'Systems Programmer',
-  'Cybersecurity Analyst', 'Product Manager', 'Mobile App Developer'
+const JOB_CATEGORIES = [
+  {
+    category: 'Technology & Engineering',
+    roles: [
+      'Frontend Developer', 'Backend Developer', 'Full Stack Developer',
+      'Mobile App Developer', 'Systems Programmer'
+    ]
+  },
+  {
+    category: 'Data & Cloud',
+    roles: [
+      'Data Scientist', 'Data Engineer', 'Machine Learning Engineer',
+      'Cloud Architect', 'DevOps Engineer'
+    ]
+  },
+  {
+    category: 'Management & Strategy',
+    roles: [
+      'Product Manager', 'Cybersecurity Analyst', 'Product Designer', 'Scrum Master'
+    ]
+  },
+  {
+    category: 'Finance & Operations',
+    roles: [
+      'Financial Analyst', 'Quantitative Researcher', 'Operations Manager', 'Business Analyst'
+    ]
+  }
 ];
 
 const ROLE_SKILLS = {
@@ -73,6 +95,12 @@ const ROLE_SKILLS = {
     { name: 'Kotlin', trend: '→' }, { name: 'SwiftUI', trend: '↑' }, { name: 'Jetpack Compose', trend: '↑' },
     { name: 'Firebase', trend: '→' }
   ],
+  'Product Designer': [{name: 'Figma', trend: '↑'}, {name: 'UI/UX', trend: '→'}, {name: 'Prototyping', trend: '↑'}],
+  'Scrum Master': [{name: 'Agile', trend: '→'}, {name: 'Jira', trend: '→'}, {name: 'Servant Leadership', trend: '↑'}],
+  'Financial Analyst': [{name: 'Excel', trend: '→'}, {name: 'Financial Modeling', trend: '↑'}, {name: 'SQL', trend: '↑'}, {name: 'PowerBI', trend: '↑'}],
+  'Quantitative Researcher': [{name: 'Python', trend: '↑'}, {name: 'C++', trend: '→'}, {name: 'Statistics', trend: '↑'}, {name: 'Machine Learning', trend: '↑'}],
+  'Operations Manager': [{name: 'Process Improvement', trend: '→'}, {name: 'Supply Chain', trend: '→'}, {name: 'Data Analysis', trend: '↑'}],
+  'Business Analyst': [{name: 'Requirements Gathering', trend: '→'}, {name: 'SQL', trend: '↑'}, {name: 'Tableau', trend: '↑'}, {name: 'Visio', trend: '→'}]
 };
 
 export default function LandingView({ onNavigate, onProfileReady }) {
@@ -277,12 +305,21 @@ export default function LandingView({ onNavigate, onProfileReady }) {
           <div style={{ fontSize: '9px', color: 'var(--text-muted)', marginBottom: '10px', fontFamily: "'JetBrains Mono', monospace" }}>STEP 01 / 02</div>
           <h2 style={{ fontFamily: "'Neue Haas Grotesk Display Pro', sans-serif", fontSize: '36px', margin: '0 0 8px' }}>TARGET JOB ROLE</h2>
           <p style={{ color: 'var(--text-muted)', fontSize: '12px', marginBottom: '32px' }}>Your intended primary career role.</p>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-            {JOB_ROLES.map(d => (
-              <div key={d} onClick={() => setSelectedRole(d)}
-                style={{ background: 'var(--bg-surface-elevated)', border: '1px solid var(--border-ghost)', borderLeft: selectedRole === d ? '3px solid #00FF88' : '3px solid transparent', padding: '15px 18px', cursor: 'pointer', color: selectedRole === d ? '#00FF88' : 'var(--text-main)', fontSize: '13px', transition: 'all 0.15s', display: 'flex', justifyContent: 'space-between' }}>
-                <span>{d}</span>
-                {selectedRole === d && <span>›</span>}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+            {JOB_CATEGORIES.map(cat => (
+              <div key={cat.category}>
+                <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginBottom: '12px', fontFamily: "'JetBrains Mono', monospace", fontWeight: 'bold', borderBottom: '1px solid var(--border-ghost)', paddingBottom: '8px' }}>
+                  {cat.category.toUpperCase()}
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '10px' }}>
+                  {cat.roles.map(d => (
+                    <div key={d} onClick={() => setSelectedRole(d)}
+                      style={{ background: 'var(--bg-surface-elevated)', border: '1px solid var(--border-ghost)', borderLeft: selectedRole === d ? '3px solid #00FF88' : '3px solid transparent', padding: '14px 16px', cursor: 'pointer', color: selectedRole === d ? '#00FF88' : 'var(--text-main)', fontSize: '12px', transition: 'all 0.15s', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <span>{d}</span>
+                      {selectedRole === d && <span style={{color: '#00FF88', fontSize: '14px'}}>›</span>}
+                    </div>
+                  ))}
+                </div>
               </div>
             ))}
           </div>

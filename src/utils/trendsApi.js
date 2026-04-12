@@ -66,17 +66,17 @@ function mockOHLCForKeyword(keyword, count) {
 function mockIntradayForKeyword(keyword) {
   const rand = seededRand(hashCode(keyword + "_intraday"));
   let price = 40 + (hashCode(keyword) % 45);
-  const hours = ["08:00","09:00","10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00"];
+  const hours = ["08:00", "09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00"];
   return hours.map(h => {
-    const open  = price + (rand() - 0.5) * 3;
-    const close = open  + (rand() - 0.5) * 4;
-    const high  = Math.max(open, close) + rand() * 2;
-    const low   = Math.min(open, close) - rand() * 2;
+    const open = price + (rand() - 0.5) * 3;
+    const close = open + (rand() - 0.5) * 4;
+    const high = Math.max(open, close) + rand() * 2;
+    const low = Math.min(open, close) - rand() * 2;
     price = close;
     return {
       date: h,
       open: +open.toFixed(2), close: +close.toFixed(2),
-      high: +high.toFixed(2), low:   +low.toFixed(2),
+      high: +high.toFixed(2), low: +low.toFixed(2),
       volume: Math.round(300 + rand() * 2500),
     };
   });
@@ -86,9 +86,9 @@ const COUNT_MAP = {
   "1D":  null,   // uses intraday
   "1W":  7,
   "1M":  30,
-  "3M":  90,
+  "6M":  180,
   "1Y":  365,
-  "ALL": 365,
+  "ALL": 1825,
 };
 
 function getMockData(keyword, timeframe) {
