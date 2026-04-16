@@ -14,7 +14,8 @@ export default function NewsView() {
   const fetchNews = async (isReload = false) => {
     if (!isReload) setLoading(true);
     try {
-      const response = await fetch('http://localhost:8000/api/news');
+      const api_base = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+      const response = await fetch(`${api_base}/api/news`);
       const data = await response.json();
       
       if (isReload) {

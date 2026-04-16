@@ -135,12 +135,28 @@ export default function LandingView({ onNavigate, onProfileReady }) {
       
       setParseStatus('AI PARSING RESUME...');
 
-      const res = await fetch('http://localhost:8000/api/analyze-resume', {
-        method: 'POST',
-        body: formData,
-      });
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 120000); // 2 min timeout
 
-      if (!res.ok) throw new Error(`Backend API error ${res.status}`);
+      const api_base = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+      try {
+        res = await fetch(`${api_base}/api/analyze-resume`, {
+          method: 'POST',
+          body: formData,
+          signal: controller.signal,
+        });
+      } finally {
+        clearTimeout(timeoutId);
+      }
+
+      if (!res.ok) {
+        let errDetail = `API error ${res.status}`;
+        try {
+          const errData = await res.json();
+          errDetail = errData.detail || errDetail;
+        } catch (_) {}
+        throw new Error(errDetail);
+      }
       const data = await res.json();
 
       const parsedRoles = data.resume_data.recommended_roles.map(r => r.role);
@@ -150,7 +166,8 @@ export default function LandingView({ onNavigate, onProfileReady }) {
       
       const targetRole = parsedRoles[0] || "Software Engineer";
       
-      const roadRes = await fetch('http://localhost:8000/api/learning-roadmap', {
+      const api_base = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+      const roadRes = await fetch(`${api_base}/api/learning-roadmap`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ target_role: targetRole, known_skills: parsedSkills })
@@ -185,7 +202,8 @@ export default function LandingView({ onNavigate, onProfileReady }) {
     setStep('parsing');
     setParseStatus('AI GENERATING ROADMAP...');
     try {
-      const res = await fetch('http://localhost:8000/api/learning-roadmap', {
+      const api_base = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+      const res = await fetch(`${api_base}/api/learning-roadmap`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ target_role: selectedRole, known_skills: selectedSkills })

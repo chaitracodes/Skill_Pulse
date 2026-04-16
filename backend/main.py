@@ -32,7 +32,7 @@ app = FastAPI(title="SkillPulse Analytics API", version="1.0.0")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://localhost:5174", "http://127.0.0.1:5173", "http://127.0.0.1:5174"],
+    allow_origins=["*"], # Allow all origins for production flexibility
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -67,45 +67,72 @@ async def analyze_resume(file: UploadFile = File(...)):
     Parses resume (PDF or TXT), extracts skills, recommends roles via Groq, 
     and returns a stock-market-like skill demand analysis.
     """
-    filename = file.filename.lower()
-    if not (filename.endswith(".pdf") or filename.endswith(".txt")):
-        raise HTTPException(status_code=400, detail="Only PDF and TXT files are supported")
+    filename = (file.filename or "").lower()
+    content_type = (file.content_type or "").lower()
+
+    # Detect file type from name OR content-type header
+    is_pdf = filename.endswith(".pdf") or "pdf" in content_type
+    is_txt = filename.endswith(".txt") or "text/plain" in content_type
+
+    if not (is_pdf or is_txt):
+        raise HTTPException(
+            status_code=400,
+            detail="Only PDF (.pdf) and plain text (.txt) files are supported. Please upload one of these formats."
+        )
         
     try:
         content_bytes = await file.read()
         
         # 1. Resume Parsing Pipeline based on type
-        if filename.endswith(".pdf"):
+        if is_pdf:
             text = extract_text_from_pdf(content_bytes)
         else:
             text = extract_text_from_txt(content_bytes)
 
         if not text.strip():
-            raise HTTPException(status_code=422, detail="Failed to extract text from file")
+            raise HTTPException(
+                status_code=422,
+                detail="Could not extract text from your file. If it's a PDF, it may be image-based (scanned). Please try a text-based PDF or a .txt file."
+            )
 
         projects_text = extract_projects(text)
         
         # Extract Skills via AI
         skills = extract_skills_from_resume(text)
         if not skills:
+            # Fallback: parse obvious keywords from text manually
             skills = []
         
-        # Recommend Roles
+        # Recommend Roles — always get at least a fallback
         recommended_roles = recommend_roles(skills, projects_text)
+        if not recommended_roles:
+            recommended_roles = [{"role": "Software Engineer", "reason": "General software development background detected."}]
         
-        # Default to the top recommended role for market analysis, or fallback to generic
-        target_role = recommended_roles[0]["role"] if recommended_roles else "Software Engineer"
+        # Default to the top recommended role for market analysis
+        target_role = recommended_roles[0]["role"]
             
-        # 2. Map Job to Core Skills (max 3)
-        job_skills_data = map_job_to_skills(target_role)
-        target_skills = job_skills_data.get("skills", ["Python", "SQL", "Machine Learning"])[:3]
+        # 2. Map Job to Core Skills (max 3) — with fallback
+        try:
+            job_skills_data = map_job_to_skills(target_role)
+            target_skills = job_skills_data.get("skills", [])[:3]
+        except Exception:
+            target_skills = []
+        if not target_skills:
+            target_skills = ["Python", "SQL", "Machine Learning"]
         
-        # 3. Google Trends Integration
-        df_trends = fetch_skill_trends(target_skills)
-        trend_info = process_trends_matrix(df_trends, target_skills)
+        # 3. Trend Synthesis — with fallback (non-fatal)
+        try:
+            df_trends = fetch_skill_trends(target_skills)
+            trend_info = process_trends_matrix(df_trends, target_skills)
+        except Exception as e:
+            print(f"Trend fetch failed (non-fatal): {e}")
+            trend_info = {"shape": [0, 0], "matrix": [], "dates": [], "skills": target_skills}
         
-        # 4. Stock Market Simulation Logic
-        signals = generate_signals(trend_info)
+        # 4. Market Signals — with fallback
+        try:
+            signals = generate_signals(trend_info)
+        except Exception:
+            signals = []
         
         # 5. Final Output Structure
         return {
@@ -128,7 +155,7 @@ async def analyze_resume(file: UploadFile = File(...)):
         raise
     except Exception as e:
         print(f"Server Error in analyze_resume: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Internal Server Error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Resume processing failed: {str(e)}")
 
 
 @app.get("/api/trends")

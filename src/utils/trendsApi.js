@@ -4,7 +4,7 @@
  * Falls back to unique per-keyword mock data if backend is unreachable.
  */
 
-const BASE = "http://localhost:8000";
+const BASE = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
 // ── Deterministic seed from keyword string ────────────────────────────────────
 // This ensures the same keyword always seeds the same "mock" data visually,

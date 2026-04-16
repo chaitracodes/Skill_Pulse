@@ -318,7 +318,8 @@ export default function TerminalView({
                     if (!simulationPrompt || !activeRole || rawData.length === 0) return;
                     setSimulationLoading(true); setSimulationResult(null); setPredictiveData([]);
                     try {
-                      const res = await fetch('http://localhost:8000/api/what-if', {
+                      const api_base = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+                      const res = await fetch(`${api_base}/api/what-if`, {
                         method: 'POST', headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ scenario: simulationPrompt, role: activeRole })
                       });
@@ -369,7 +370,8 @@ export default function TerminalView({
                 if (!simulationPrompt || !activeRole || rawData.length === 0) return;
                 setSimulationLoading(true); setSimulationResult(null); setPredictiveData([]);
                 try {
-                  const res = await fetch('http://localhost:8000/api/what-if', {
+                  const api_base = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+                  const res = await fetch(`${api_base}/api/what-if`, {
                     method: 'POST', headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ scenario: simulationPrompt, role: activeRole })
                   });

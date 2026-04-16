@@ -69,7 +69,8 @@ function App() {
     setIsGeneratingProject(true);
     try {
       const role = activeLearningJob || (watchlist1.length > 0 ? watchlist1[0] : 'Software Engineer');
-      const res = await fetch('http://localhost:8000/api/project-plan', {
+      const api_base = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+      const res = await fetch(`${api_base}/api/project-plan`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ target_role: role, skills: knownSkills })
