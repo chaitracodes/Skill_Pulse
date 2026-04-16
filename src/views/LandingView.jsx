@@ -139,6 +139,7 @@ export default function LandingView({ onNavigate, onProfileReady }) {
       const timeoutId = setTimeout(() => controller.abort(), 120000); // 2 min timeout
 
       const api_base = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+      let res;
       try {
         res = await fetch(`${api_base}/api/analyze-resume`, {
           method: 'POST',
@@ -166,7 +167,6 @@ export default function LandingView({ onNavigate, onProfileReady }) {
       
       const targetRole = parsedRoles[0] || "Software Engineer";
       
-      const api_base = import.meta.env.VITE_API_URL || 'http://localhost:8000';
       const roadRes = await fetch(`${api_base}/api/learning-roadmap`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
